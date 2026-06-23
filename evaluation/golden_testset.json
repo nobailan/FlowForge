@@ -1,0 +1,104 @@
+{
+  "meta": {
+    "name": "FlowForge v0.1 黄金测试集",
+    "version": "1.0",
+    "total_questions": 12,
+    "categories": {
+      "factual": "事实性问题",
+      "reasoning": "推理性问题",
+      "comparison": "对比分析",
+      "creative": "创意生成"
+    },
+    "acceptance_criteria": {
+      "success_rate": "≥ 70%",
+      "avg_latency_ms": "< 30000ms",
+      "avg_token_consumption": "< 5000"
+    }
+  },
+  "test_cases": [
+    {
+      "id": 1,
+      "category": "factual",
+      "question": "What is the capital of France?",
+      "expected_result_type": "factual_answer",
+      "notes": "基础事实查询，应准确回答 Paris"
+    },
+    {
+      "id": 2,
+      "category": "factual",
+      "question": "List three primary colors.",
+      "expected_result_type": "list",
+      "notes": "应列出红黄蓝或 RGB"
+    },
+    {
+      "id": 3,
+      "category": "factual",
+      "question": "What year did World War II end?",
+      "expected_result_type": "factual_answer",
+      "notes": "应回答 1945"
+    },
+    {
+      "id": 4,
+      "category": "reasoning",
+      "question": "If a train travels at 60 mph for 2.5 hours, how far does it go?",
+      "expected_result_type": "calculated_answer",
+      "notes": "应计算出 150 miles"
+    },
+    {
+      "id": 5,
+      "category": "reasoning",
+      "question": "Explain the concept of supply and demand in one paragraph.",
+      "expected_result_type": "explanation",
+      "notes": "应包含价格机制、供需关系等关键概念"
+    },
+    {
+      "id": 6,
+      "category": "reasoning",
+      "question": "What is the difference between machine learning and deep learning?",
+      "expected_result_type": "comparison",
+      "notes": "应说明两者是子集关系，深度学习是 ML 的子集"
+    },
+    {
+      "id": 7,
+      "category": "comparison",
+      "question": "Compare Python and JavaScript: which is better for data science and why?",
+      "expected_result_type": "comparison",
+      "notes": "应指出 Python 在数据科学领域的优势（库生态、社区等）"
+    },
+    {
+      "id": 8,
+      "category": "comparison",
+      "question": "Compare cloud computing vs on-premise hosting for a startup.",
+      "expected_result_type": "comparison",
+      "notes": "应涉及成本、弹性、运维等方面的对比"
+    },
+    {
+      "id": 9,
+      "category": "creative",
+      "question": "Write a haiku about artificial intelligence.",
+      "expected_result_type": "creative_text",
+      "notes": "应符合俳句格式（5-7-5 音节）"
+    },
+    {
+      "id": 10,
+      "category": "creative",
+      "question": "Suggest 3 innovative features for a smart home system.",
+      "expected_result_type": "list_with_descriptions",
+      "notes": "应包含创新性功能描述"
+    },
+    {
+      "id": 11,
+      "category": "factual",
+      "question": "What is the boiling point of water in Celsius?",
+      "expected_result_type": "factual_answer",
+      "notes": "应回答 100°C"
+    },
+    {
+      "id": 12,
+      "category": "reasoning",
+      "question": "A store offers a 20% discount on a $50 item. What is the final price?",
+      "expected_result_type": "calculated_answer",
+      "notes": "应计算出 $40"
+    }
+  ]
+}

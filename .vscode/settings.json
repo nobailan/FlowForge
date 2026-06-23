@@ -1,0 +1,7 @@
+{
+  "code-runner.executorMap": {
+    "python": "E:\\anaconda3\\envs\\graph\\python -u"
+  },
+  "code-runner.runInTerminal": true,
+  "code-runner.fileDirectoryAsCwd": true
+}

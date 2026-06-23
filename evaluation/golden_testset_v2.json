@@ -1,0 +1,85 @@
+{
+  "meta": {
+    "name": "FlowForge v0.2 Complex Testset",
+    "version": "2.0",
+    "total_questions": 8,
+    "categories": {
+      "code_generation": "代码生成",
+      "debugging": "代码调试",
+      "data_analysis": "数据分析",
+      "refactoring": "代码重构"
+    },
+    "acceptance_criteria": {
+      "success_rate": "≥ 60%",
+      "avg_latency_ms": "< 60000ms per question",
+      "avg_token_consumption": "< 20000",
+      "tool_usage_required": "At least one tool call per task"
+    }
+  },
+  "test_cases": [
+    {
+      "id": 1,
+      "category": "code_generation",
+      "question": "Write a Python function `fibonacci(n)` that returns the nth Fibonacci number. Include a brief docstring.",
+      "expected_output_type": "python_code",
+      "expected_contains": ["def fibonacci", "return", "docstring"],
+      "notes": "Should generate correct Python code"
+    },
+    {
+      "id": 2,
+      "category": "code_generation",
+      "question": "Write a bash script that counts all .py files in the current directory and its subdirectories, then prints the count.",
+      "expected_output_type": "bash_script",
+      "expected_contains": ["find", ".py", "wc -l"],
+      "notes": "Should use find + wc"
+    },
+    {
+      "id": 3,
+      "category": "debugging",
+      "question": "Here is buggy code:\n\ndef calculate_average(numbers):\n    total = 0\n    for n in numbers:\n        total += n\n    return total / len(numbers)\n\nresult = calculate_average([])\n\nWhat is the bug? Fix it.",
+      "expected_output_type": "bug_fix",
+      "expected_contains": ["ZeroDivisionError", "empty list", "if not numbers"],
+      "notes": "Should identify division by zero with empty list"
+    },
+    {
+      "id": 4,
+      "category": "debugging",
+      "question": "This code has a performance issue:\n\ndef find_duplicates(lst):\n    duplicates = []\n    for i in range(len(lst)):\n        for j in range(i+1, len(lst)):\n            if lst[i] == lst[j] and lst[i] not in duplicates:\n                duplicates.append(lst[i])\n    return duplicates\n\nIdentify the problem and rewrite it efficiently.",
+      "expected_output_type": "optimized_code",
+      "expected_contains": ["set", "O(n)", "hash"],
+      "notes": "O(n^2) nested loop with O(n) lookup = O(n^3), should use set"
+    },
+    {
+      "id": 5,
+      "category": "data_analysis",
+      "question": "Given this CSV data:\n\nname,age,salary\nAlice,30,75000\nBob,25,62000\nCharlie,35,90000\nDiana,28,70000\n\nWrite Python code using only built-in modules to: 1) read this CSV 2) calculate average salary 3) find the person with highest salary. Print results.",
+      "expected_output_type": "python_code_with_output",
+      "expected_contains": ["csv", "average", "max", "DictReader"],
+      "notes": "Should use csv module and calculate correct stats"
+    },
+    {
+      "id": 6,
+      "category": "data_analysis",
+      "question": "Count the frequency of each word in this string (case-insensitive, ignore punctuation):\n\n'The quick brown fox jumps over the lazy dog. The dog was not amused by the fox.'\n\nWrite Python code and show the top 3 most frequent words.",
+      "expected_output_type": "python_code_with_output",
+      "expected_contains": ["Counter", "split", "most_common"],
+      "notes": "Should use collections.Counter or manual counting"
+    },
+    {
+      "id": 7,
+      "category": "refactoring",
+      "question": "Refactor this code to use modern Python patterns:\n\ndef process_data(data, mode):\n    result = []\n    if mode == 'double':\n        for item in data:\n            if item > 0:\n                result.append(item * 2)\n    elif mode == 'square':\n        for item in data:\n            if item > 0:\n                result.append(item ** 2)\n    elif mode == 'half':\n        for item in data:\n            if item > 0:\n                result.append(item / 2)\n    return result\n\nRewrite using dictionary dispatch and list comprehension.",
+      "expected_output_type": "refactored_code",
+      "expected_contains": ["dict", "lambda", "list comprehension"],
+      "notes": "Should use operations dict instead of if/elif chain"
+    },
+    {
+      "id": 8,
+      "category": "refactoring",
+      "question": "This class violates Single Responsibility Principle. Split it into two classes:\n\nclass UserReport:\n    def __init__(self, users):\n        self.users = users\n    \n    def calculate_stats(self):\n        # calculates avg age, total salary\n        pass\n    \n    def format_as_html(self, stats):\n        # formats stats as HTML table\n        pass\n    \n    def format_as_csv(self, stats):\n        # formats stats as CSV\n        pass\n    \n    def send_email(self, report, recipient):\n        # sends report via email\n        pass\n\nWrite the refactored code with two classes and explain your reasoning.",
+      "expected_output_type": "refactored_classes",
+      "expected_contains": ["class", "separate", "Single Responsibility"],
+      "notes": "Should split calculation from formatting/presentation"
+    }
+  ]
+}
