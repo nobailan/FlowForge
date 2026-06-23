@@ -27,9 +27,9 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://postgres:zyx2003@db:5432/flowforge
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD}@db:5432/flowforge
       ANTHROPIC_BASE_URL: https://api.deepseek.com/anthropic
-      ANTHROPIC_API_KEY: sk-7ab052d456084b61844c3075e3b2d1b8
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       ANTHROPIC_MODEL: deepseek-v4-pro
     command: >
       sh -c "cd /app && python -m uvicorn src.api.router:app --host 0.0.0.0 --port 8000"

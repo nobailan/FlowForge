@@ -20,7 +20,7 @@ ANTHROPIC_BASE_URL = os.getenv(
 )
 ANTHROPIC_API_KEY = os.getenv(
     "ANTHROPIC_API_KEY",
-    "sk-7ab052d456084b61844c3075e3b2d1b8",
+    os.getenv("ANTHROPIC_API_KEY", ""),
 )
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "deepseek-v4-pro")
 
