@@ -5,7 +5,7 @@ services:
     image: postgres:16
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: zyx2003
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-flowforge}
       POSTGRES_DB: flowforge
     ports:
       - "5432:5432"

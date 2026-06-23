@@ -10,7 +10,7 @@ load_dotenv()
 # ==================== 数据库 ====================
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:zyx2003@localhost:5432/flowforge",
+    "postgresql://postgres:postgres@localhost:5432/flowforge",
 )
 
 # ==================== LLM / DeepSeek API ====================
