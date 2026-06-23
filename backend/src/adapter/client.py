@@ -1,16 +1,16 @@
 """
-OpenCode HTTP API 客户端 — v0.2
-直接构造 URL，不依赖 httpx query param 编码。
+OpenCode HTTP API 客户端 — v0.4
+使用 aiohttp（httpx 与 OpenCode 有 502 兼容问题）。
 """
-import json
-import httpx
+import json as _json
+import aiohttp
 from dataclasses import dataclass, field
-from typing import Any, AsyncIterator, Optional
+from typing import Any, Optional
 
 
 @dataclass
 class SessionInfo:
-    id: str
+    id: str = ""
     title: str = ""
     agent: str = ""
     model: dict = field(default_factory=dict)
@@ -34,43 +34,64 @@ class OpenCodeClient:
 
     def __init__(self, base_url: str = "http://localhost:4096"):
         self.base_url = base_url.rstrip("/")
-        self._client: httpx.AsyncClient | None = None
+        self._session: aiohttp.ClientSession | None = None
 
-    @property
-    def http(self) -> httpx.AsyncClient:
-        """懒加载 httpx client — 必须在 event loop 内首次访问。"""
-        if self._client is None:
-            self._client = httpx.AsyncClient(timeout=httpx.Timeout(600.0))
-        return self._client
+    async def _get_session(self) -> aiohttp.ClientSession:
+        if self._session is None or self._session.closed:
+            timeout = aiohttp.ClientTimeout(total=600)
+            self._session = aiohttp.ClientSession(timeout=timeout)
+        return self._session
 
     def _url(self, path: str, directory: str) -> str:
         return f"{self.base_url}{path}?directory={directory}"
 
+    async def _post(self, url: str, body: dict) -> dict:
+        s = await self._get_session()
+        async with s.post(url, json=body) as resp:
+            text = await resp.text()
+            if resp.status >= 400:
+                raise Exception(f"HTTP {resp.status}: {text[:200]}")
+            return _json.loads(text) if text else {}
+
+    async def _get(self, url: str) -> dict:
+        s = await self._get_session()
+        async with s.get(url) as resp:
+            text = await resp.text()
+            if resp.status >= 400:
+                raise Exception(f"HTTP {resp.status}: {text[:200]}")
+            return _json.loads(text) if text else {}
+
+    async def _delete(self, url: str) -> None:
+        s = await self._get_session()
+        async with s.delete(url) as resp:
+            if resp.status >= 400:
+                text = await resp.text()
+                raise Exception(f"HTTP {resp.status}: {text[:200]}")
+
+    # ==================== Session ====================
+
     async def create_session(self, directory: str, title: str = "",
                              agent: str = "build", model: Optional[dict] = None,
                              permission: Optional[list[dict]] = None) -> SessionInfo:
-        body: dict[str, Any] = {}
-        if title: body["title"] = title
-        if agent: body["agent"] = agent
+        body: dict[str, Any] = {"title": title, "agent": agent}
         if model:
             body["model"] = {"providerID": model.get("providerID", "anthropic"),
                              "id": model.get("modelID", "claude-sonnet-4-6")}
-        if permission: body["permission"] = permission
-        resp = await self.http.post(self._url("/session", directory), json=body)
-        resp.raise_for_status()
-        d = resp.json()
+        if permission:
+            body["permission"] = permission
+        d = await self._post(self._url("/session", directory), body)
         return SessionInfo(id=d["id"], title=d.get("title", ""), agent=d.get("agent", ""),
                            model=d.get("model", {}), tokens=d.get("tokens", {}), raw=d)
 
     async def get_session(self, session_id: str, directory: str) -> SessionInfo:
-        resp = await self.http.get(self._url(f"/session/{session_id}", directory))
-        resp.raise_for_status()
-        d = resp.json()
+        d = await self._get(self._url(f"/session/{session_id}", directory))
         return SessionInfo(id=d["id"], title=d.get("title", ""), agent=d.get("agent", ""),
                            model=d.get("model", {}), tokens=d.get("tokens", {}), raw=d)
 
     async def delete_session(self, session_id: str, directory: str) -> None:
-        await self.http.delete(self._url(f"/session/{session_id}", directory))
+        await self._delete(self._url(f"/session/{session_id}", directory))
+
+    # ==================== Prompt ====================
 
     async def prompt(self, session_id: str, directory: str, parts: list[dict],
                      agent: str = "", model: Optional[dict] = None,
@@ -81,20 +102,18 @@ class OpenCodeClient:
             body["model"] = {"providerID": model.get("providerID", "anthropic"),
                              "modelID": model.get("modelID", "claude-sonnet-4-6")}
         if system: body["system"] = system
-        resp = await self.http.post(
-            self._url(f"/session/{session_id}/message", directory), json=body)
-        resp.raise_for_status()
-        d = resp.json()
+        d = await self._post(self._url(f"/session/{session_id}/message", directory), body)
         text_parts = [p.get("text", "") for p in d.get("parts", []) if p.get("type") == "text"]
         info = d.get("info", {})
         return PromptResult(message_id=info.get("id", ""), text="\n".join(text_parts),
                             tokens=info.get("tokens", {}), cost=info.get("cost", 0),
                             finish=info.get("finish", ""), parts=d.get("parts", []), raw=d)
 
+    # ==================== Provider ====================
+
     async def list_providers(self, directory: str) -> dict:
-        resp = await self.http.get(self._url("/provider", directory))
-        resp.raise_for_status()
-        return resp.json()
+        return await self._get(self._url("/provider", directory))
 
     async def close(self):
-        await self.http.aclose()
+        if self._session and not self._session.closed:
+            await self._session.close()

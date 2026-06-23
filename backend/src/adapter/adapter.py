@@ -4,6 +4,7 @@ v0.2 核心模块，替代 v0.1 中单次 LLM API 调用的节点实现。
 """
 import time
 import asyncio
+import queue
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
@@ -114,7 +115,7 @@ class AgentNodeAdapter:
                 permission=permission,
             )
 
-            # 5. 启动 SSE 监控桥接（独立线程，后台收集事件）
+            # 5. SSE 监控: bridge 线程后台收集事件
             bridge = MonitorBridge(execution_id, node_id, directory, self.client.base_url)
             bridge.start()
 
@@ -129,7 +130,7 @@ class AgentNodeAdapter:
                 timeout=timeout,
             )
 
-            # 7. 停止 bridge，一次性 flush 所有收集到的事件
+            # 7. 停止 bridge，flush 全部事件到 WebSocket（历史回放）
             bridge.stop()
             events = bridge.get_events()
             for ev in events:
@@ -146,11 +147,12 @@ class AgentNodeAdapter:
                 if p.get("type") in ("tool_call", "tool_result")
             )
 
-            # 8. 清理 Session
+            # 8. 清理 Session + HTTP client
             try:
                 await self.client.delete_session(session.id, directory)
             except Exception:
                 pass
+            await self.client.close()
 
             return NodeResult(
                 node_id=node_id,

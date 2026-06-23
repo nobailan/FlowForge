@@ -9,7 +9,13 @@ import type { EvaluationResult } from '../../types/evaluation';
 export default function EvalPanel() {
   const setRightPanel = useAppStore((s) => s.setRightPanel);
   const currentArchitectureId = useAppStore((s) => s.currentArchitectureId);
-  const canvasData = useCanvasStore((s) => s.toCanvasJSON());
+  const canvasData = useCanvasStore((s) => {
+    try {
+      return s.toCanvasJSON();
+    } catch {
+      return { nodes: [], edges: [] };
+    }
+  });
 
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<EvaluationResult | null>(null);

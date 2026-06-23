@@ -9,6 +9,8 @@ import FlowCanvas from './Canvas/FlowCanvas';
 import ConfigDrawer from './ConfigPanel/ConfigDrawer';
 import ExecutionConsole from './Monitor/ExecutionConsole';
 import OutputTerminal from './OutputTerminal';
+import ErrorBoundary from './ErrorBoundary';
+import AutoPrompt from './AutoPrompt';
 import EvalPanel from './Evaluator/EvalPanel';
 import CompareView from './Evaluator/CompareView';
 import LibraryPanel from './Library/LibraryPanel';
@@ -188,6 +190,8 @@ export default function AppLayout() {
         >
           📦 Library
         </button>
+
+        <AutoPrompt />
       </div>
 
       {/* Main content */}
@@ -198,7 +202,7 @@ export default function AppLayout() {
         {/* Right panel */}
         {rightPanelMode === 'config' && <ConfigDrawer />}
         {rightPanelMode === 'monitor' && <ExecutionConsole />}
-        {rightPanelMode === 'eval' && <EvalPanel />}
+        {rightPanelMode === 'eval' && <ErrorBoundary><EvalPanel /></ErrorBoundary>}
         {rightPanelMode === 'compare' && <CompareView />}
         {rightPanelMode === 'library' && <LibraryPanel />}
       </div>

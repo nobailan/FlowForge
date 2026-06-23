@@ -24,6 +24,7 @@ from .graph import router as graph_router
 from .execute import router as execute_router
 from .evaluate import router as evaluate_router
 from .templates import router as templates_router
+from .analyze import router as analyze_router
 
 
 @asynccontextmanager
@@ -62,6 +63,7 @@ def create_app() -> FastAPI:
     app.include_router(execute_router, prefix="/api/execute", tags=["Execute"])
     app.include_router(evaluate_router, prefix="/api/evaluate", tags=["Evaluate"])
     app.include_router(templates_router, prefix="/api/templates", tags=["Templates"])
+    app.include_router(analyze_router, prefix="/api", tags=["Analyze"])
 
     # 健康检查
     @app.get("/api/health")
