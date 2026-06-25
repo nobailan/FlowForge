@@ -3,6 +3,7 @@ FlowForge v0.1 - 执行 API
 REST 端点 + WebSocket 端点。
 """
 import json
+import time
 import asyncio
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
@@ -34,6 +35,55 @@ async def execute_flow(data: ExecuteRequest, background_tasks: BackgroundTasks,
 
     # 后台执行 — 使用独立的 DB session，避免请求级 session 提前关闭
     async def run_execution():
+        import asyncio as aio
+        from ..adapter.monitor_bridge import (
+            _stream_queue, merge_thinking,
+            EVENT_NODE_START, EVENT_NODE_END,
+            make_event, register_execution, unregister_execution,
+        )
+
+        register_execution(run.id)
+        execution_done = False
+
+        # v0.6: 流式推送协程 — 在 FastAPI 的 event loop 中轮询全局队列
+        async def stream_pusher():
+            pending: list[dict] = []
+            last_flush = time.time()
+            while not execution_done or not _stream_queue.empty():
+                # 收集队列中所有事件
+                try:
+                    while True:
+                        ev = _stream_queue.get_nowait()
+                        # 只推送当前执行的事件
+                        if ev.get("execution_id") == run.id:
+                            pending.append(ev)
+                except Exception:
+                    pass
+
+                # 每 150ms 或累积 > 3 个事件时 flush
+                now = time.time()
+                if pending and (now - last_flush > 0.15 or len(pending) > 3):
+                    for ev in merge_thinking(pending):
+                        try:
+                            await ws_manager.broadcast_streaming(run.id, ev)
+                        except Exception:
+                            pass
+                    pending.clear()
+                    last_flush = now
+
+                await aio.sleep(0.1)
+
+            # 最后 flush 剩余事件
+            if pending:
+                for ev in merge_thinking(pending):
+                    try:
+                        await ws_manager.broadcast_streaming(run.id, ev)
+                    except Exception:
+                        pass
+
+        # 启动推送协程（与执行并行）
+        push_task = aio.create_task(stream_pusher())
+
         bg_db = SessionLocal()
         try:
             result = await executor.execute(data.input_text)
@@ -57,6 +107,13 @@ async def execute_flow(data: ExecuteRequest, background_tasks: BackgroundTasks,
                 bg_db.commit()
         finally:
             bg_db.close()
+            execution_done = True
+            # 等待推送协程排空队列（最多 2 秒）
+            try:
+                await aio.wait_for(push_task, timeout=2.0)
+            except aio.TimeoutError:
+                push_task.cancel()
+            unregister_execution(run.id)
 
     background_tasks.add_task(run_execution)
 

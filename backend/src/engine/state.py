@@ -31,6 +31,7 @@ class AgentState(TypedDict, total=False):
     """
 
     # ---- 核心字段 ----
+    execution_id: Annotated[str, _keep_last]
     messages: Annotated[list[Any], add_messages]
     input: Annotated[str, _keep_last]
 
@@ -51,11 +52,12 @@ class AgentState(TypedDict, total=False):
     node_timeline: Annotated[list[dict], _merge_lists]
 
 
-def create_initial_state(user_input: str) -> dict:
+def create_initial_state(user_input: str, execution_id: str = "default") -> dict:
     """创建初始状态。返回普通 dict，LangGraph 会按 Annotated 规则合并。"""
     return {
         "messages": [],
         "input": user_input,
+        "execution_id": execution_id,
         "node_outputs": {},
         "current_node": "",
         "route_decision": "",

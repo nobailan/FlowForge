@@ -30,7 +30,7 @@ class FlowExecutor:
             return self._error_result(f"Graph build failed: {e}")
 
         agent = graph.compile()
-        initial_state = create_initial_state(user_input)
+        initial_state = create_initial_state(user_input, execution_id=self.execution_id)
         config = {"configurable": {"thread_id": self.execution_id}}
 
         # 立即广播所有节点为 "running"——前端不再显示 waiting

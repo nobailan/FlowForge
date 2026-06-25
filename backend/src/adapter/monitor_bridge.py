@@ -1,18 +1,76 @@
 """
-FlowForge v0.4 - SSE 监控桥接（实时流式版）
-MonitorBridge 线程监听 SSE → queue → BridgePoller 线程实时推送。
+FlowForge v0.6 - 实时监控桥接
+MonitorBridge 线程监听 OpenCode SSE → 写入全局 queue.Queue
+→ execute.py 的 stream_pusher 协程（FastAPI event loop）轮询推送 WebSocket。
+
+解决了 v0.4-v0.5 的跨 event loop 问题：
+之前 BridgePoller 在自己的 asyncio.run() 里直接调 ws_manager →
+WebSocket 绑在 FastAPI 的 event loop → 跨 loop 操作失败。
+现在改为：MonitorBridge 只负责写入全局队列，推送由 FastAPI 侧完成。
 """
 import time
 import json
 import threading
 import queue
-from ..engine.monitor import ws_manager
 
+# ============================================================
+# v0.6: 全局事件队列（跨线程桥梁）
+# ============================================================
+
+# 模块级全局队列，MonitorBridge 线程写入，FastAPI 协程读出
+_stream_queue: queue.Queue = queue.Queue()
+
+# 按 execution_id 索引的活跃队列引用，用于 cleanup
+_active_queues: dict[str, list[queue.Queue]] = {}
+
+
+def get_stream_queue() -> queue.Queue:
+    """获取全局流式事件队列。"""
+    return _stream_queue
+
+
+def register_execution(execution_id: str):
+    """注册一次执行（用于后续 cleanup）。"""
+    _active_queues[execution_id] = []
+
+
+def unregister_execution(execution_id: str):
+    """清理一次执行的所有队列引用。"""
+    _active_queues.pop(execution_id, None)
+
+
+# ============================================================
+# v0.6 标准化事件类型
+# ============================================================
+
+EVENT_NODE_START = "node:start"
+EVENT_NODE_THINKING = "node:thinking"
+EVENT_NODE_TOOL = "node:tool"
+EVENT_NODE_TOOL_RESULT = "node:tool_result"
+EVENT_NODE_END = "node:end"
+
+
+def make_event(event_type: str, execution_id: str, node_id: str, **kwargs) -> dict:
+    """构造标准化事件。"""
+    ev = {
+        "event": event_type,
+        "execution_id": execution_id,
+        "node_id": node_id,
+        "timestamp": time.time(),
+    }
+    ev.update(kwargs)
+    return ev
+
+
+# ============================================================
+# MonitorBridge
+# ============================================================
 
 class MonitorBridge:
     """OpenCode SSE 监听器（独立线程）。
 
-    将 SSE 事件解析后同时放入 _events list 和 _queue（用于实时推送）。
+    连接到 OpenCode 的 /event SSE 端点，解析事件，
+    写入全局 _stream_queue（供 FastAPI 协程实时推送）。
     """
 
     def __init__(self, execution_id: str, node_id: str, directory: str,
@@ -23,8 +81,7 @@ class MonitorBridge:
         self.opencode_url = opencode_url
         self._thread: threading.Thread | None = None
         self._stop = threading.Event()
-        self._events: list[dict] = []
-        self._queue: queue.Queue = queue.Queue()
+        self._events: list[dict] = []    # 本地备份（用于历史回放）
         self._last_text = ""
 
     def start(self):
@@ -38,10 +95,8 @@ class MonitorBridge:
             self._thread.join(timeout=3)
 
     def get_events(self) -> list[dict]:
+        """获取本地收集的所有事件（历史回放用）。"""
         return self._events
-
-    def get_queue(self) -> queue.Queue:
-        return self._queue
 
     def _run(self):
         import urllib.request
@@ -79,118 +134,66 @@ class MonitorBridge:
                 event_type = data.get("type", "")
                 props = data.get("properties", {})
 
-                ev = {
-                    "execution_id": self.execution_id,
-                    "node_id": self.node_id,
-                    "event_type": "thinking",
-                    "text": "",
-                    "tool_name": "",
-                    "tool_input": "",
-                    "timestamp": time.time(),
-                }
-
                 if event_type == "message.part.updated":
                     part = props.get("part", {})
                     if part.get("type") == "text":
                         text = part.get("text", "")
+                        if not text or not text.strip():
+                            continue  # 跳过空文本和纯空白
                         self._last_text += text
-                        ev["text"] = text
-                        ev["event_type"] = "thinking"
+                        ev = make_event(
+                            EVENT_NODE_THINKING,
+                            self.execution_id, self.node_id,
+                            text=text,
+                        )
                     elif part.get("type") == "tool_call":
-                        ev["event_type"] = "tool_start"
-                        ev["tool_name"] = part.get("tool", "?")
-                        ev["tool_input"] = str(part.get("input", ""))[:200]
+                        ev = make_event(
+                            EVENT_NODE_TOOL,
+                            self.execution_id, self.node_id,
+                            tool_name=part.get("tool", "?"),
+                            tool_input=str(part.get("input", ""))[:200],
+                        )
                     else:
                         continue
                 elif event_type == "session.status":
                     status = props.get("status", {})
                     if status.get("type") == "idle":
-                        ev["event_type"] = "tool_end"
+                        ev = make_event(
+                            EVENT_NODE_TOOL_RESULT,
+                            self.execution_id, self.node_id,
+                            tool_name="",
+                            summary="idle",
+                        )
                     else:
                         continue
                 else:
                     continue
 
+                # 写入本地备份
                 self._events.append(ev)
-                self._queue.put(ev)  # 实时推入队列
+                # v0.6: 写入全局队列，供 FastAPI 协程实时推送
+                _stream_queue.put(ev)
 
             except Exception:
                 pass
 
 
-class BridgePoller:
-    """轮询 MonitorBridge 队列，实时推送事件到 WebSocket。
+# ============================================================
+# 工具函数：合并相邻 thinking 事件
+# ============================================================
 
-    在独立线程中运行自己的 asyncio loop，
-    每 200ms 轮询 queue，合并相邻 thinking，通过 ws_manager 推送。
-    """
-
-    def __init__(self, bridge: MonitorBridge):
-        self._bridge = bridge
-        self._thread: threading.Thread | None = None
-        self._stop = threading.Event()
-
-    def start(self):
-        self._stop.clear()
-        self._thread = threading.Thread(target=self._run, daemon=True)
-        self._thread.start()
-
-    def stop(self):
-        self._stop.set()
-        if self._thread:
-            self._thread.join(timeout=3)
-
-    def _run(self):
-        """在新线程中创建独立 asyncio loop，轮询 queue 并推送。"""
-        import asyncio
-
-        async def poll_loop():
-            q = self._bridge.get_queue()
-            exec_id = self._bridge.execution_id
-            pending_events: list[dict] = []
-            last_flush = time.time()
-
-            while not self._stop.is_set():
-                # 收集队列中所有事件
-                try:
-                    while True:
-                        ev = q.get_nowait()
-                        pending_events.append(ev)
-                except queue.Empty:
-                    pass
-
-                # 每 200ms 或累积 > 5 个事件时 flush
-                now = time.time()
-                if pending_events and (now - last_flush > 0.2 or len(pending_events) > 5):
-                    # 合并相邻 thinking
-                    merged = _merge_thinking(pending_events)
-                    for ev in merged:
-                        await ws_manager.broadcast_streaming(exec_id, ev)
-                    pending_events.clear()
-                    last_flush = now
-
-                await asyncio.sleep(0.1)
-
-            # 最后 flush 剩余事件
-            if pending_events:
-                for ev in _merge_thinking(pending_events):
-                    await ws_manager.broadcast_streaming(exec_id, ev)
-
-        asyncio.run(poll_loop())
-
-
-def _merge_thinking(events: list[dict]) -> list[dict]:
+def merge_thinking(events: list[dict]) -> list[dict]:
     """合并连续 thinking 事件，减少推送量。"""
     if len(events) <= 1:
         return events
     result = []
     buf = None
     for ev in events:
-        if ev["event_type"] == "thinking":
+        if ev.get("event") == EVENT_NODE_THINKING:
             if buf is None:
                 buf = dict(ev)
             else:
-                buf["text"] += ev["text"]
+                buf["text"] = (buf.get("text", "") or "") + (ev.get("text", "") or "")
                 buf["timestamp"] = ev["timestamp"]
         else:
             if buf is not None:

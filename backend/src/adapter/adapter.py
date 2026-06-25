@@ -112,6 +112,15 @@ class AgentNodeAdapter:
         permission = self._build_permission(tools)
 
         try:
+            # v0.6: 推送 node:start 事件
+            from .monitor_bridge import _stream_queue, make_event, EVENT_NODE_START
+            node_label = node_config.get("system_prompt", "")[:80] or node_type
+            _stream_queue.put(make_event(
+                EVENT_NODE_START, execution_id, node_id,
+                node_type=node_type,
+                node_label=(node_config.get("system_prompt", "") or "")[:80],
+            ))
+
             # 4. 创建 Session
             session = await self.client.create_session(
                 directory=directory,
@@ -136,12 +145,8 @@ class AgentNodeAdapter:
                 timeout=timeout,
             )
 
-            # 7. 停止 bridge，flush 全部事件到 WebSocket（历史回放）
+            # 7. 停止 bridge，计算指标
             bridge.stop()
-            events = bridge.get_events()
-            for ev in events:
-                await ws_manager.broadcast_streaming(execution_id, ev)
-
             elapsed_ms = int((time.time() - start_time) * 1000)
             tokens = (
                 result.tokens.get("input", 0)
@@ -152,6 +157,26 @@ class AgentNodeAdapter:
                 1 for p in result.parts
                 if p.get("type") in ("tool_call", "tool_result")
             )
+
+            # v0.6: 发送 node:end 事件（通过全局队列，实时推送）
+            from .monitor_bridge import (
+                _stream_queue, make_event, EVENT_NODE_END,
+            )
+            end_ev = make_event(
+                EVENT_NODE_END, execution_id, node_id,
+                status="completed",
+                output_preview=result.text[:200] if result.text else "",
+                tokens=tokens,
+                latency_ms=elapsed_ms,
+                tool_call_count=tool_count,
+            )
+            _stream_queue.put(end_ev)
+
+            # 历史回放：本地事件也推一次（供 WebSocket 连接时的回放）
+            events = bridge.get_events()
+            for ev in events:
+                await ws_manager.broadcast_streaming(execution_id, ev)
+            await ws_manager.broadcast_streaming(execution_id, end_ev)
 
             # 8. 清理 Session + HTTP client
             try:

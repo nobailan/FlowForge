@@ -56,17 +56,21 @@ export default function ExecutionConsole() {
     };
 
     ws.onerror = () => {
-      // WebSocket 失败，用轮询兜底
       pollResult();
     };
     ws.onclose = () => {};
 
-    // 轮询兜底
+    // 轮询兜底：仅在 running 期间轮询，完成后立即停止
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
+    let pollStopped = false;
     const pollResult = async () => {
+      if (pollStopped) return;
       try {
         const resp = await fetch(`/api/execute/${executionId}`);
         const data = await resp.json();
         if (data.status === 'completed' || data.status === 'failed') {
+          pollStopped = true;
+          if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
           const nodeOutputs = data.output_data?.node_outputs || {};
           for (const [nid, ndata] of Object.entries(nodeOutputs)) {
             const nd = ndata as any;
@@ -82,8 +86,7 @@ export default function ExecutionConsole() {
         }
       } catch (_) {}
     };
-    const pollTimer = setInterval(pollResult, 3000);
-    setTimeout(() => clearInterval(pollTimer), 300000);
+    pollTimer = setInterval(pollResult, 3000);
 
     return () => {
       ws.close();
