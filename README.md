@@ -11,7 +11,8 @@
 | v0.2 | Agent 化 | 接入 OpenCode，每个节点变成完整 Agent Session |
 | v0.3 | 可视化 | 暗色主题 + 执行控制台 + 实时监控 |
 | v0.4 | 自动化 | 拓扑分析引擎 + Auto Prompt 生成 + Apply & Run |
-| **v0.5** | **Token 优化** | **工件存储 + JSON 约束 + 工具按需加载 + 滑动窗口** |
+| v0.5 | Token 优化 | 工件存储 + JSON 约束 + 工具按需加载 + 滑动窗口 |
+| **v0.6** | **实时监控** | **队列桥接跨 event loop 推送，thinking/工具调用实时可见** |
 
 ## 核心特性
 
@@ -20,7 +21,7 @@
 - **OpenCode 执行内核** — 每个节点背后是一个完整的 Agent Session，具备 Bash、文件读写、搜索等工具
 - **Token 优化引擎 (v0.5)** — 工件存储（Redis）、JSON 强制输出、工具按需分配、滑动窗口，综合节省 38-80% Token
 - **自动 Prompt 生成 (v0.4)** — 拓扑分析 + 角色分类 + Prompt 自动生成 + 一键应用并运行
-- **实时监控控制台** — 终端风格的 ExecutionConsole，展示每个节点的思考过程、工具调用、Token 消耗
+- **实时流式监控 (v0.6)** — 队列桥接跨 event loop 推送，Agent 思考过程、工具调用实时滚动显示，Token 精确统计不虚高
 - **评测引擎** — 加载测试集，自动计算成功率、延迟、Token 成本、工具调用效率；支持多架构并排对比
 - **暗色主题** — 全界面 VS Code Tokyo Night 风格
 
@@ -186,7 +187,8 @@ harness_lab/
 |------|------|
 | 所有节点 "等待中..." 不动 | `curl localhost:8000/api/health` |
 | 节点打叉，latency 正好 60s | 超时。检查 allowed_tools 是否给够，或增大 timeout |
-| Token 异常高 | 某 Agent 在过度探索。检查 System Prompt 是否有 JSON 约束 + 工具限制 |
+| Token 异常高 / 执行完成后还在涨 | 重启前端，v0.6 已修复此 Bug |
+| 控制台无实时输出 | 确认后端重启后重新加载模板（旧模板缓存无 execution_id） |
 | 前端白屏 | 刷新页面；ErrorBoundary 会自动兜底 |
 | WebSocket 连接失败 | 控制台有 3 秒轮询兜底 |
 | Redis 连接失败 | ArtifactStore 自动回退内存存储，不影响执行 |
