@@ -48,7 +48,7 @@ export default function BaseNode({ id, data, selected, children, color, icon }: 
           </span>
         )}
         {data._status === 'error' && (
-          <span className="text-[10px] text-red-400">Error</span>
+          <span className="text-[10px] text-red-400">错误</span>
         )}
       </div>
 

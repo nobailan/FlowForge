@@ -25,7 +25,7 @@ export default function EvalPanel() {
   const handleRunEval = async () => {
     setLoading(true);
     setError('');
-    setMessage('Saving architecture first...');
+    setMessage('正在保存架构...');
 
     try {
       // Save current canvas first if not saved
@@ -39,18 +39,18 @@ export default function EvalPanel() {
         );
         archId = arch.id;
         useAppStore.getState().setArchitectureId(archId);
-        setMessage(`Saved as "${arch.name}". Loading test sets...`);
+        setMessage(`已保存为 "${arch.name}"。正在加载测试集...`);
       }
 
       // Get test sets
       const testSets = await evaluateApi.listTestSets();
       if (testSets.length === 0) {
-        setError('No test sets available. Create one first.');
+        setError('没有可用的测试集，请先创建。');
         setLoading(false);
         return;
       }
 
-      setMessage(`Running evaluation with "${testSets[0].name}"...`);
+      setMessage(`正在使用 "${testSets[0].name}" 运行评测...`);
       const evalResult = await evaluateApi.run(archId, testSets[0].id);
 
       // Poll for completion
@@ -62,7 +62,7 @@ export default function EvalPanel() {
           setLoading(false);
           setMessage('');
         } else {
-          setMessage(`Evaluating... ${updated.status}`);
+          setMessage(`评测中... ${updated.status}`);
         }
       }, 2000);
 
@@ -70,7 +70,7 @@ export default function EvalPanel() {
         clearInterval(pollInterval);
         if (loading) {
           setLoading(false);
-          setError('Evaluation timed out.');
+          setError('评测超时。');
         }
       }, 300000); // 5 min timeout
     } catch (e: any) {
@@ -82,7 +82,7 @@ export default function EvalPanel() {
   return (
     <div className="w-[400px] border-l bg-[#252526] flex flex-col h-full overflow-hidden">
       <div className="p-3 border-b flex items-center justify-between">
-        <h3 className="font-semibold text-sm">📊 Evaluation</h3>
+        <h3 className="font-semibold text-sm">📊 评测</h3>
         <button
           onClick={() => setRightPanel(null)}
           className="text-[#999] hover:text-[#ccc]"
@@ -95,13 +95,13 @@ export default function EvalPanel() {
         {!result && !loading && (
           <div className="text-center py-10">
             <p className="text-sm text-[#999] mb-3">
-              Run evaluation to measure this architecture's performance.
+              运行评测以衡量此架构的性能。
             </p>
             <button
               onClick={handleRunEval}
               className="px-4 py-2 bg-[#1e3a2f] text-white text-sm rounded hover:bg-green-600 transition-colors"
             >
-              ▶ Run Evaluation
+              ▶ 运行评测
             </button>
             {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
           </div>
@@ -110,7 +110,7 @@ export default function EvalPanel() {
         {loading && (
           <div className="text-center py-10">
             <div className="animate-spin text-3xl mb-3">⏳</div>
-            <p className="text-sm text-[#999]">{message || 'Evaluating...'}</p>
+            <p className="text-sm text-[#999]">{message || '评测中...'}</p>
           </div>
         )}
 

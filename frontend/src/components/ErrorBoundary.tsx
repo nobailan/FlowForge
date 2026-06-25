@@ -14,7 +14,7 @@ export default class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="w-[400px] border-l bg-[#252526] p-4">
-          <h3 className="font-semibold text-sm text-red-400 mb-2">Component Error</h3>
+          <h3 className="font-semibold text-sm text-red-400 mb-2">组件错误</h3>
           <pre className="text-xs text-red-300 whitespace-pre-wrap">{this.state.error}</pre>
         </div>
       );

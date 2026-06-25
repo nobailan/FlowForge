@@ -75,11 +75,11 @@ export default function NodeActivityCard({ nodeId, nodeLabel, nodeType, activity
           {!activity || activity.logs.length === 0 ? (
             <div className="px-3 py-4 text-center">
               {status === 'pending' ? (
-                <span className="text-[#ccc]">Waiting...</span>
+                <span className="text-[#ccc]">等待中...</span>
               ) : status === 'running' ? (
-                <span className="text-yellow-400 animate-pulse">⏳ Agent thinking...</span>
+                <span className="text-yellow-400 animate-pulse">⏳ Agent 思考中...</span>
               ) : (
-                <span className="text-[#ccc]">No activity yet...</span>
+                <span className="text-[#ccc]">暂无活动...</span>
               )}
             </div>
           ) : (

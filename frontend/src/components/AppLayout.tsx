@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useCanvasStore } from '../store/canvasStore';
 import { useAppStore, type RightPanelMode } from '../store/appStore';
 import { graphsApi } from '../api/graphs';
@@ -34,6 +34,21 @@ export default function AppLayout() {
 
   const [runInput, setRunInput] = useState('');
   const [showRunDialog, setShowRunDialog] = useState(false);
+
+  // 监听 AutoPrompt 的 "应用并运行" 事件
+  const runDialogTriggered = useRef(false);
+  useEffect(() => {
+    const handler = () => {
+      if (!runDialogTriggered.current) {
+        runDialogTriggered.current = true;
+        setShowRunDialog(true);
+        setTimeout(() => { runDialogTriggered.current = false; }, 500);
+      }
+    };
+    window.addEventListener('flowforge:open-run-dialog', handler);
+    return () => window.removeEventListener('flowforge:open-run-dialog', handler);
+  }, []);
+
   const [saving, setSaving] = useState(false);
   const [running, setRunning] = useState(false);
 
@@ -52,7 +67,7 @@ export default function AppLayout() {
       }
       markDirty(false);
     } catch (e: any) {
-      alert('Save failed: ' + e.message);
+      alert('保存失败：' + e.message);
     }
     setSaving(false);
   };
@@ -91,7 +106,7 @@ export default function AppLayout() {
       pollUntilComplete(result.execution_id);
     } catch (e: any) {
       console.error('[FlowForge] Execute failed:', e);
-      alert('Execution failed: ' + e.message);
+      alert('执行失败：' + e.message);
       setRunning(false);
     }
   };
@@ -124,7 +139,7 @@ export default function AppLayout() {
             markDirty(true);
           }}
           className="px-2 py-0.5 text-sm border rounded w-48 focus:outline-none focus:border-blue-400"
-          placeholder="Architecture name..."
+          placeholder="架构名称..."
         />
 
         <div className="flex-1" />
@@ -134,7 +149,7 @@ export default function AppLayout() {
           disabled={saving}
           className="px-3 py-1 text-xs bg-[#1e3a5f] text-white rounded hover:bg-blue-600 transition-colors disabled:opacity-50"
         >
-          {saving ? 'Saving...' : '💾 Save'}
+          {saving ? '保存中...' : '💾 保存'}
         </button>
 
         <button
@@ -142,7 +157,7 @@ export default function AppLayout() {
           disabled={running}
           className="px-3 py-1 text-xs bg-[#1e3a2f] text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50"
         >
-          {running ? '⏳ Running...' : '▶ Run'}
+          {running ? '⏳ 运行中...' : '▶ 运行'}
         </button>
 
         {executionId && (
@@ -154,7 +169,7 @@ export default function AppLayout() {
                 : 'text-yellow-400 hover:bg-[#3a3a1e] border border-yellow-300'
             }`}
           >
-            📡 Console
+            📡 控制台
           </button>
         )}
 
@@ -166,7 +181,7 @@ export default function AppLayout() {
               : 'text-purple-400 hover:bg-[#2a1e3a]'
           }`}
         >
-          📊 Eval
+          📊 评测
         </button>
 
         <button
@@ -177,7 +192,7 @@ export default function AppLayout() {
               : 'text-orange-400 hover:bg-[#3a2e1e]'
           }`}
         >
-          ⚖ Compare
+          ⚖ 对比
         </button>
 
         <button
@@ -188,7 +203,7 @@ export default function AppLayout() {
               : 'text-[#ccc] hover:bg-[#3e3e42]'
           }`}
         >
-          📦 Library
+          📦 架构库
         </button>
 
         <AutoPrompt />
@@ -214,16 +229,16 @@ export default function AppLayout() {
       {showRunDialog && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-[#252526] rounded-lg shadow-xl shadow-black/30 p-6 w-96">
-            <h3 className="font-semibold text-lg mb-3">▶ Run Flow</h3>
+            <h3 className="font-semibold text-lg mb-3">▶ 运行 Flow</h3>
             <label className="block text-sm text-[#ccc] mb-1">
-              Input / Question:
+              输入 / 问题：
             </label>
             <textarea
               value={runInput}
               onChange={(e) => setRunInput(e.target.value)}
               rows={4}
               className="w-full px-3 py-2 border rounded text-sm focus:outline-none focus:border-blue-400 resize-none"
-              placeholder="Enter the question or input text..."
+              placeholder="输入问题或任务描述..."
               autoFocus
             />
             <div className="flex justify-end gap-2 mt-4">
@@ -231,14 +246,14 @@ export default function AppLayout() {
                 onClick={() => setShowRunDialog(false)}
                 className="px-4 py-1.5 text-sm text-[#ccc] border rounded hover:bg-[#2d2d30]"
               >
-                Cancel
+                取消
               </button>
               <button
                 onClick={handleRun}
                 disabled={!runInput.trim()}
                 className="px-4 py-1.5 text-sm bg-[#1e3a2f] text-white rounded hover:bg-green-600 disabled:opacity-50"
               >
-                Execute
+                执行
               </button>
             </div>
           </div>

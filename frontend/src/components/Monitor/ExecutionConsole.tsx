@@ -113,10 +113,10 @@ export default function ExecutionConsole() {
   if (executionStatus === 'idle') {
     return (
       <div className="w-[420px] border-l bg-[#252526] p-4">
-        <h3 className="font-semibold text-sm mb-2">Execution Console</h3>
+        <h3 className="font-semibold text-sm mb-2">执行控制台</h3>
         <p className="text-[#999] text-xs text-center mt-20">
-          Click "Run" to execute the flow.<br />
-          Real-time agent activity will appear here.
+          点击 "运行" 执行流程。<br />
+          实时代理活动将显示在这里。
         </p>
       </div>
     );
@@ -127,7 +127,7 @@ export default function ExecutionConsole() {
       {/* Header */}
       <div className="px-4 py-2.5 border-b border-[#555] flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-sm text-[#eee]">⚡ Execution Console</h3>
+          <h3 className="font-semibold text-sm text-[#eee]">⚡ 执行控制台</h3>
           <p className="text-[10px] text-[#999]">ID: {executionId?.slice(0, 8)}...</p>
         </div>
         <button
@@ -139,8 +139,8 @@ export default function ExecutionConsole() {
       {/* Global progress */}
       <div className="px-4 py-2 border-b border-[#555]">
         <div className="flex justify-between text-[10px] text-[#999] mb-1">
-          <span>Progress {completedCount}/{totalNodes} nodes</span>
-          <span className="text-yellow-400 font-mono">{totalTokens.toLocaleString()} tokens</span>
+          <span>进度 {completedCount}/{totalNodes} 节点</span>
+          <span className="text-yellow-400 font-mono">{totalTokens.toLocaleString()} token</span>
           <span className="text-[#999]">{elapsed}s</span>
         </div>
         <div className="w-full bg-gray-700 rounded-full h-1.5">
@@ -172,7 +172,7 @@ export default function ExecutionConsole() {
 
       {/* Footer */}
       <div className="px-4 py-2 border-t border-[#555] text-[10px] text-[#999]">
-        {executionStatus === 'running' ? '▶ Running...' : '■ ' + executionStatus}
+        {executionStatus === 'running' ? '▶ 运行中...' : '■ ' + executionStatus}
       </div>
     </div>
   );

@@ -12,7 +12,7 @@ export default function TokenBar({ events }: Props) {
 
   return (
     <div className="px-3 py-2 border-b">
-      <div className="text-[10px] text-[#999] mb-1">Token Consumption by Node</div>
+      <div className="text-[10px] text-[#999] mb-1">各节点 Token 消耗</div>
       <div className="space-y-1">
         {nodesWithTokens.map((event) => (
           <div key={event.node_id} className="flex items-center gap-2">

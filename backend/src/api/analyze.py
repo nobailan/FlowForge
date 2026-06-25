@@ -39,6 +39,8 @@ def generate_node_prompts(data: dict):
             nid: {
                 "system_prompt": p.system_prompt,
                 "user_prompt_template": p.user_prompt_template,
+                "allowed_tools": p.allowed_tools,
+                "output_schema": p.output_schema,
             }
             for nid, p in result.prompts.items()
         },

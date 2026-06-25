@@ -34,25 +34,25 @@ export default function LibraryPanel() {
       setArchitectureName(arch.name);
       setRightPanel(null); // Close library to see canvas
     } catch (e: any) {
-      alert('Failed to load: ' + e.message);
+      alert('加载失败：' + e.message);
     }
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Delete "${name}"?`)) return;
+    if (!confirm(`删除 "${name}"？`)) return;
     try {
       await graphsApi.delete(id);
       setArchitectures(architectures.filter((a) => a.id !== id));
     } catch (e: any) {
-      alert('Failed to delete: ' + e.message);
+      alert('删除失败：' + e.message);
     }
   };
 
   if (loading) {
     return (
       <div className="w-80 border-l bg-[#252526] p-4">
-        <h3 className="font-semibold text-sm mb-3">📦 Architecture Library</h3>
-        <p className="text-xs text-[#999] text-center mt-20">Loading...</p>
+        <h3 className="font-semibold text-sm mb-3">📦 架构库</h3>
+        <p className="text-xs text-[#999] text-center mt-20">加载中...</p>
       </div>
     );
   }
@@ -60,7 +60,7 @@ export default function LibraryPanel() {
   return (
     <div className="w-80 border-l bg-[#252526] flex flex-col h-full overflow-hidden">
       <div className="p-3 border-b flex items-center justify-between">
-        <h3 className="font-semibold text-sm">📦 Architecture Library</h3>
+        <h3 className="font-semibold text-sm">📦 架构库</h3>
         <button onClick={() => setRightPanel(null)} className="text-[#999]">×</button>
       </div>
 
@@ -69,7 +69,7 @@ export default function LibraryPanel() {
 
         {architectures.length === 0 && (
           <p className="text-xs text-[#999] text-center mt-20">
-            No saved architectures yet. Create one and save it!
+            暂无保存的架构。创建一个并保存！
           </p>
         )}
 
@@ -92,7 +92,7 @@ export default function LibraryPanel() {
                 onClick={() => handleLoad(arch.id)}
                 className="flex-1 px-2 py-1 text-[10px] bg-[#1e3a5f] text-blue-600 rounded hover:bg-blue-100 transition-colors"
               >
-                Load
+                加载
               </button>
               <button
                 onClick={() => handleDelete(arch.id, arch.name)}
@@ -111,7 +111,7 @@ export default function LibraryPanel() {
           onClick={loadArchitectures}
           className="w-full py-1.5 text-xs text-[#999] border rounded hover:bg-[#2d2d30]"
         >
-          🔄 Refresh
+          🔄 刷新
         </button>
       </div>
     </div>

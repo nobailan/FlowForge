@@ -44,14 +44,14 @@ export default function OutputTerminal() {
         className="w-full flex items-center gap-2 px-4 py-1.5 text-xs hover:bg-gray-800 transition-colors"
       >
         <span className="text-[#999]">{expanded ? '▾' : '▸'}</span>
-        <span className="text-[#999] font-semibold">📋 Output Terminal</span>
+        <span className="text-[#999] font-semibold">📋 输出终端</span>
         {executionStatus === 'completed' && (
           <span className="text-green-400">✅</span>
         )}
         {totalTokens > 0 && (
           <span className="text-yellow-400 font-mono">{totalTokens.toLocaleString()}T</span>
         )}
-        {loading && <span className="text-[#999]">Loading...</span>}
+        {loading && <span className="text-[#999]">加载中...</span>}
         <span className="flex-1" />
         <span className="text-[#ccc] text-[10px]">ID: {executionId.slice(0, 8)}</span>
       </button>
@@ -62,8 +62,8 @@ export default function OutputTerminal() {
           {!hasOutput && !loading && (
             <div className="text-[#ccc] text-center py-4">
               {executionStatus === 'running'
-                ? '⏳ Execution in progress...'
-                : 'No output yet. Run a flow to see results here.'}
+                ? '⏳ 执行中...'
+                : '暂无输出。运行流程后结果将显示在这里。'}
             </div>
           )}
           {nodes.map((node) => {

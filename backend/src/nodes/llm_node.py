@@ -125,6 +125,7 @@ def llm_node_factory(node_id: str, config: dict):
                     "user_prompt_template": user_prompt,
                     "max_steps": config.get("max_steps", 25),
                     "timeout_seconds": config.get("timeout_seconds", 300),
+                    "allowed_tools": config.get("allowed_tools"),  # v0.5: 工具白名单
                 },
                 input_text=user_prompt,
                 upstream_outputs=upstream if upstream else None,
@@ -165,7 +166,8 @@ def llm_node_factory(node_id: str, config: dict):
             "input_preview": user_prompt[:200],
             "output_preview": result.output[:200],
         })
-        state["total_tokens"] = state.get("total_tokens", 0) + result.tokens
+        # v0.5: 只返回增量，state reducer (add) 负责累加
+        state["total_tokens"] = result.tokens
 
         if result.status == "error":
             state["error"] = result.error

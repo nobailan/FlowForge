@@ -18,9 +18,9 @@ export default function MonitorPanel() {
   if (executionStatus === 'idle') {
     return (
       <div className="w-72 border-l bg-[#252526] p-4">
-        <h3 className="font-semibold text-sm mb-2">Execution Monitor</h3>
+        <h3 className="font-semibold text-sm mb-2">执行监控</h3>
         <p className="text-[#999] text-xs text-center mt-20">
-          Click "Run" to execute the flow. Node status will appear here in real-time.
+          点击 "运行" 执行流程。节点状态将实时显示在这里。
         </p>
       </div>
     );
@@ -31,7 +31,7 @@ export default function MonitorPanel() {
       {/* Header */}
       <div className="p-3 border-b flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-sm">Execution Monitor</h3>
+          <h3 className="font-semibold text-sm">执行监控</h3>
           <p className="text-[10px] text-[#999]">
             ID: {executionId?.slice(0, 8)}...
           </p>
@@ -56,9 +56,9 @@ export default function MonitorPanel() {
       {/* Progress bar */}
       <div className="px-3 py-2 border-b">
         <div className="flex justify-between text-[10px] text-[#999] mb-1">
-          <span>Progress</span>
+          <span>进度</span>
           <span>
-            {completedCount}/{totalNodes} nodes
+            {completedCount}/{totalNodes} 节点
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-1.5">
@@ -75,11 +75,11 @@ export default function MonitorPanel() {
       <div className="grid grid-cols-2 gap-2 px-3 py-2 border-b text-center">
         <div className="bg-[#2d2d30] rounded p-1.5">
           <div className="text-lg font-bold text-blue-600">{totalTokens}</div>
-          <div className="text-[10px] text-[#999]">Total Tokens</div>
+          <div className="text-[10px] text-[#999]">总 Token</div>
         </div>
         <div className="bg-[#2d2d30] rounded p-1.5">
           <div className="text-lg font-bold text-purple-400">{totalLatency}ms</div>
-          <div className="text-[10px] text-[#999]">Total Latency</div>
+          <div className="text-[10px] text-[#999]">总延迟</div>
         </div>
       </div>
 
@@ -102,7 +102,7 @@ export default function MonitorPanel() {
           }}
           className="w-full py-1.5 text-xs text-[#999] border rounded hover:bg-[#2d2d30]"
         >
-          Close Monitor
+          关闭监控
         </button>
       </div>
     </div>

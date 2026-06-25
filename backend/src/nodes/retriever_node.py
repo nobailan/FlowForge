@@ -48,7 +48,8 @@ def retriever_node_factory(node_id: str, config: dict):
                              "model_config": {"providerID": config.get("model_provider", "deepseek"),
                                               "modelID": config.get("model_id", "deepseek-v4-pro")},
                              "system_prompt": task, "timeout_seconds": config.get("timeout_seconds", 120),
-                             "max_steps": 15},
+                             "max_steps": 15,
+                             "allowed_tools": config.get("allowed_tools")},  # v0.5
                 input_text=input_text, upstream_outputs=upstream,
             )
         except Exception as e:
@@ -59,6 +60,6 @@ def retriever_node_factory(node_id: str, config: dict):
 
         state.setdefault("node_outputs", {})[node_id] = {"output": result.output, "tokens": result.tokens,
                                                           "latency_ms": result.latency_ms, "status": result.status, "node_type": "retriever"}
-        state["total_tokens"] = state.get("total_tokens", 0) + result.tokens
+        state["total_tokens"] = result.tokens  # v0.5: delta, add reducer sums
         return state
     return node_fn

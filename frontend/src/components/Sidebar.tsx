@@ -109,13 +109,13 @@ export default function Sidebar() {
       {/* Header */}
       <div className="p-3 border-b bg-[#252526]">
         <h2 className="font-bold text-sm text-[#ddd]">🧪 FlowForge</h2>
-        <p className="text-[10px] text-[#999]">Agent Architecture Workbench</p>
+        <p className="text-[10px] text-[#999]">Agent 架构工作台</p>
       </div>
 
       {/* Node Palette */}
       <div className="p-2">
         <h3 className="text-[11px] font-semibold text-[#999] uppercase px-1 mb-1">
-          Node Palette
+          节点面板
         </h3>
         {Object.entries(categories).map(([category, types]) => (
           <div key={category} className="mb-2">
@@ -147,7 +147,7 @@ export default function Sidebar() {
           onClick={() => setShowTemplates(!showTemplates)}
           className="w-full text-left text-[11px] font-semibold text-[#999] uppercase px-1 py-1 hover:text-[#ddd]"
         >
-          📋 Templates {showTemplates ? '▾' : '▸'}
+          📋 模板 {showTemplates ? '▾' : '▸'}
         </button>
         {showTemplates && (
           <div className="mt-1 space-y-0.5">

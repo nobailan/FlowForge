@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useCanvasStore } from '../store/canvasStore';
 import { useAppStore } from '../store/appStore';
 import { apiPost } from '../api/client';
@@ -36,22 +36,52 @@ export default function AutoPrompt() {
   const handleApply = (nodeId: string) => {
     const p = prompts[nodeId];
     if (!p) return;
+    const role = topoResult?.node_roles?.[nodeId] || 'worker';
     updateNodeConfig(nodeId, {
       system_prompt: p.system_prompt || '',
       user_prompt_template: p.user_prompt_template || '',
+      max_steps: role === 'dispatcher' || role === 'aggregator' ? 5 : 8,
+      timeout_seconds: role === 'aggregator' ? 60 : 90,
+      opencode_agent: 'build',
+      model_provider: 'deepseek',
+      model_id: 'deepseek-v4-pro',
     });
     useAppStore.getState().markDirty(true);
   };
 
-  const handleApplyAll = () => {
+  const applyAllPrompts = () => {
+    const roles = topoResult?.node_roles || {};
     for (const [nid, p] of Object.entries(prompts)) {
+      const role = roles[nid] || 'worker';
+      const maxSteps = role === 'dispatcher' || role === 'aggregator' ? 5 : 8;
+      const timeout = role === 'aggregator' ? 60 : 90;
       updateNodeConfig(nid, {
         system_prompt: (p as any).system_prompt || '',
         user_prompt_template: (p as any).user_prompt_template || '',
+        max_steps: maxSteps,
+        timeout_seconds: timeout,
+        opencode_agent: 'build',
+        model_provider: 'deepseek',
+        model_id: 'deepseek-v4-pro',
       });
     }
     useAppStore.getState().markDirty(true);
+  };
+
+  const handleApplyAll = () => {
+    applyAllPrompts();
     setOpen(false);
+  };
+
+  const handleApplyAndRun = () => {
+    applyAllPrompts();
+    setOpen(false);
+    // 关闭面板后触发 Run 对话框
+    useAppStore.getState().setRightPanel(null);
+    setTimeout(() => {
+      const event = new CustomEvent('flowforge:open-run-dialog');
+      window.dispatchEvent(event);
+    }, 200);
   };
 
   if (!open) {
@@ -59,9 +89,9 @@ export default function AutoPrompt() {
       <button
         onClick={() => setOpen(true)}
         className="px-3 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
-        title="Auto-generate prompts based on topology"
+        title="根据拓扑结构自动生成 Prompt"
       >
-        ✨ Auto Prompt
+        ✨ 自动 Prompt
       </button>
     );
   }
@@ -71,7 +101,7 @@ export default function AutoPrompt() {
       <div className="bg-[#252526] rounded-lg shadow-xl w-[700px] max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-[#3c3c3c]">
-          <h3 className="font-semibold text-sm text-[#eee]">✨ Auto Prompt Generator</h3>
+          <h3 className="font-semibold text-sm text-[#eee]">✨ 自动 Prompt 生成器</h3>
           <button onClick={() => setOpen(false)} className="text-[#999] hover:text-[#eee]">×</button>
         </div>
 
@@ -79,14 +109,14 @@ export default function AutoPrompt() {
           {/* Input */}
           <div>
             <label className="block text-xs text-[#999] mb-1">
-              What task should this flow accomplish?
+              这个流程要完成什么任务？
             </label>
             <textarea
               value={task}
               onChange={(e) => setTask(e.target.value)}
               rows={2}
               className="w-full px-3 py-2 border border-[#3c3c3c] rounded text-sm bg-[#2d2d30] text-[#eee] focus:outline-none focus:border-purple-400"
-              placeholder="e.g., Analyze the project architecture and generate a report"
+              placeholder="例如：分析项目架构并生成报告"
             />
           </div>
 
@@ -95,7 +125,7 @@ export default function AutoPrompt() {
             disabled={loading}
             className="w-full py-2 bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50 text-sm"
           >
-            {loading ? '⏳ Analyzing...' : '🔍 Analyze Topology & Generate Prompts'}
+            {loading ? '⏳ 分析中...' : '🔍 分析拓扑并生成 Prompt'}
           </button>
 
           {error && (
@@ -105,14 +135,14 @@ export default function AutoPrompt() {
           {/* Topology result */}
           {topoResult && (
             <div className="border border-[#3c3c3c] rounded p-3">
-              <div className="text-xs font-semibold text-[#eee] mb-2">Topology Analysis</div>
+              <div className="text-xs font-semibold text-[#eee] mb-2">拓扑分析</div>
               <div className="grid grid-cols-2 gap-2 text-[11px]">
                 <div>
-                  <span className="text-[#999]">Pattern:</span>{' '}
+                  <span className="text-[#999]">模式：</span>{' '}
                   <span className="text-purple-400 font-semibold">{topoResult.pattern}</span>
                 </div>
                 <div>
-                  <span className="text-[#999]">Valid:</span>{' '}
+                  <span className="text-[#999]">有效：</span>{' '}
                   <span className={topoResult.is_valid ? 'text-green-400' : 'text-red-400'}>
                     {topoResult.is_valid ? '✓' : '✗'}
                   </span>
@@ -130,13 +160,21 @@ export default function AutoPrompt() {
           {Object.keys(prompts).length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <div className="text-xs font-semibold text-[#eee]">Generated Prompts</div>
-                <button
-                  onClick={handleApplyAll}
-                  className="px-3 py-1 text-[10px] bg-green-500 text-white rounded hover:bg-green-600"
-                >
-                  Apply All →
-                </button>
+                <div className="text-xs font-semibold text-[#eee]">生成的 Prompt</div>
+                <div className="flex gap-1">
+                  <button
+                    onClick={handleApplyAll}
+                    className="px-3 py-1 text-[10px] bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    全部应用
+                  </button>
+                  <button
+                    onClick={handleApplyAndRun}
+                    className="px-3 py-1 text-[10px] bg-green-500 text-white rounded hover:bg-green-600"
+                  >
+                    应用并运行 ▶
+                  </button>
+                </div>
               </div>
 
               {Object.entries(prompts).map(([nid, p]: [string, any]) => {
@@ -152,7 +190,7 @@ export default function AutoPrompt() {
                         onClick={() => handleApply(nid)}
                         className="px-2 py-0.5 text-[10px] bg-blue-500 text-white rounded hover:bg-blue-600"
                       >
-                        Apply
+                        应用
                       </button>
                     </div>
 
@@ -171,22 +209,22 @@ export default function AutoPrompt() {
                           }}
                           className="px-2 py-0.5 text-[10px] bg-green-500 text-white rounded"
                         >
-                          Save Edit
+                          保存修改
                         </button>
                       </div>
                     ) : (
                       <div
                         className="text-[11px] text-[#ccc] cursor-pointer hover:text-[#eee]"
                         onDoubleClick={() => { setEditMode(nid); setEditText(p.system_prompt || ''); }}
-                        title="Double-click to edit"
+                        title="双击编辑"
                       >
-                        {p.system_prompt?.slice(0, 120) || '(empty)'}...
+                        {p.system_prompt?.slice(0, 120) || '(空)'}...
                       </div>
                     )}
 
                     {p.user_prompt_template && (
                       <div className="mt-1 text-[10px] text-[#999]">
-                        Template: {p.user_prompt_template.slice(0, 80)}
+                        模板: {p.user_prompt_template.slice(0, 80)}
                       </div>
                     )}
                   </div>

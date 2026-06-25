@@ -75,6 +75,7 @@ def tool_node_factory(node_id: str, config: dict):
                     "system_prompt": task,
                     "timeout_seconds": config.get("timeout_seconds", 120),
                     "max_steps": 10,
+                    "allowed_tools": config.get("allowed_tools"),  # v0.5
                 },
                 input_text=input_text,
                 upstream_outputs=upstream,
@@ -92,7 +93,7 @@ def tool_node_factory(node_id: str, config: dict):
             "latency_ms": result.latency_ms, "status": result.status,
             "node_type": "tool",
         }
-        state["total_tokens"] = state.get("total_tokens", 0) + result.tokens
+        state["total_tokens"] = result.tokens  # v0.5: delta, add reducer sums
         return state
 
     return node_fn

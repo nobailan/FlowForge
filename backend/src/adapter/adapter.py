@@ -98,11 +98,17 @@ class AgentNodeAdapter:
         model = node_config.get("model_config") or {"providerID": "anthropic", "modelID": "claude-sonnet-4-6"}
         max_steps = node_config.get("max_steps", 25)
         timeout = node_config.get("timeout_seconds", 300)
-        tools = NODE_TOOLS_MAP.get(node_type)
+        # v0.5: 优先使用 config 中的 allowed_tools（由 AutoPrompt 动态分配），否则回退到静态映射
+        # 注意：[] 表示"不允许任何工具"，不能用 `or`（[] 是 falsy）
+        cfg_tools = node_config.get("allowed_tools")
+        if cfg_tools is not None:
+            tools = cfg_tools
+        else:
+            tools = NODE_TOOLS_MAP.get(node_type)
         system_prompt = node_config.get("system_prompt", "")
 
-        # 3. 构建 prompt
-        parts = self._build_prompt(input_text, upstream_outputs, node_config)
+        # 3. 构建 prompt（v0.5: 传入 execution_id 用于 REF 解析）
+        parts = self._build_prompt(input_text, upstream_outputs, node_config, execution_id)
         permission = self._build_permission(tools)
 
         try:
@@ -187,15 +193,38 @@ class AgentNodeAdapter:
         input_text: str,
         upstream_outputs: Optional[dict[str, str]],
         config: dict,
+        execution_id: str = "",
     ) -> list[dict]:
-        """根据节点类型构建发给 Agent 的 prompt parts。"""
+        """根据节点类型构建发给 Agent 的 prompt parts。
+
+        v0.5: 解析上游输出中的 [REF: artifact://...] 引用，按需获取内容。
+        """
+        from ..engine.artifact_store import get_artifact_store
+
         parts: list[dict] = []
 
-        # 上游输出作为上下文
+        # 上游输出作为上下文（解析 REF 引用）
         if upstream_outputs:
+            store = get_artifact_store()
             context_lines = ["## Upstream Node Outputs"]
             for name, output in upstream_outputs.items():
-                context_lines.append(f"\n### {name}\n{output}")
+                # v0.5: 按需解析 REF，避免直接塞入大段内容
+                # 如果输出短（<500 chars），直接包含；如果长，只包含摘要 + REF
+                if len(output) > 500:
+                    # 尝试提取 JSON 中的 result 字段
+                    try:
+                        import json as _json
+                        parsed = _json.loads(output)
+                        summary = parsed.get("result", parsed.get("answer", output[:200]))
+                    except Exception:
+                        summary = output[:200]
+                    context_lines.append(
+                        f"\n### {name}\n{summary}...\n[Full output in execution log]"
+                    )
+                else:
+                    # v0.5: 解析输出中的 REF 引用
+                    resolved = store.resolve_refs(output)
+                    context_lines.append(f"\n### {name}\n{resolved}")
             context = "\n".join(context_lines)
             parts.append({"type": "text", "text": context})
 
@@ -203,7 +232,6 @@ class AgentNodeAdapter:
         task = input_text
         user_prompt_template = config.get("user_prompt_template", "")
         if user_prompt_template and user_prompt_template != "{{input}}":
-            # 有自定义模板，用模板内容作为任务
             task = user_prompt_template
             if upstream_outputs:
                 for name, output in upstream_outputs.items():

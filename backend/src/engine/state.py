@@ -44,7 +44,7 @@ class AgentState(TypedDict, total=False):
 
     # ---- 最终输出 ----
     final_output: Annotated[str, _keep_last]
-    total_tokens: Annotated[int, add]
+    total_tokens: Annotated[int, add]  # v0.5: 节点只返回增量，add reducer 正确求和
     total_latency_ms: Annotated[int, add]
 
     # ---- 监控时间线 ----
