@@ -208,17 +208,15 @@ export default function AppLayout() {
           📦 架构库
         </button>
 
-        <button
-          onClick={() => setKernel(kernel === 'opencode' ? 'kunkun' : 'opencode')}
-          className={`px-2 py-0.5 text-xs rounded transition-colors ${
-            kernel === 'kunkun'
-              ? 'bg-[#2a1e3a] text-purple-400 border border-purple-500'
-              : 'text-[#999] hover:bg-[#2d2d30]'
-          }`}
-          title={kernel === 'kunkun' ? 'Kunkun (鲲) — DeepSeek 原生 Harness' : 'OpenCode — Claude Code 兼容内核'}
+        <select
+          value={kernel}
+          onChange={(e) => setKernel(e.target.value as 'opencode' | 'kunkun')}
+          className="px-1.5 py-0.5 text-xs bg-[#2d2d30] text-[#ccc] border border-[#3c3c3c] rounded focus:outline-none focus:border-purple-400"
+          title="选择 Agent 执行内核"
         >
-          {kernel === 'kunkun' ? '🐟 鲲' : '📡 OpenCode'}
-        </button>
+          <option value="opencode">📡 OpenCode</option>
+          <option value="kunkun">🐟 鲲 (Kunkun)</option>
+        </select>
 
         <AutoPrompt />
       </div>
