@@ -8,6 +8,9 @@ from typing import Any
 
 import anthropic
 
+# 确保节点类型已注册（评测器可能在其他模块之前被加载）
+import src.nodes  # noqa: F401
+
 from ..engine.executor import FlowExecutor
 from ..evaluator.metrics import compute_metrics
 from ..config import ANTHROPIC_BASE_URL, ANTHROPIC_API_KEY, ANTHROPIC_MODEL
