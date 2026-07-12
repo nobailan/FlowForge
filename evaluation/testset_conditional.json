@@ -1,0 +1,10 @@
+{
+  "name": "Conditional Branch 专用",
+  "description": "条件路由场景，验证分类准确性和分支逻辑",
+  "recommended_for": ["conditional"],
+  "test_cases": [
+    {"id": 1, "question": "Classify and handle: What is the chemical formula of water?", "category": "classification", "expected_contains": ["H2O"]},
+    {"id": 2, "question": "Classify and handle: Explain why the sky appears blue.", "category": "classification", "expected_contains": ["scattering", "wavelength"]},
+    {"id": 3, "question": "Is 7 a prime number? Just answer the fact.", "category": "classification", "expected_contains": ["yes", "prime"]}
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "通用基础问答",
+  "description": "适用于任意拓扑的基础问答测试，验证流程基本可用性",
+  "recommended_for": ["mixed", "unknown"],
+  "test_cases": [
+    {"id": 1, "question": "What is 2 + 2?", "category": "math", "expected_contains": ["4"]},
+    {"id": 2, "question": "Is the sky blue? Answer yes or no.", "category": "fact", "expected_contains": ["yes"]},
+    {"id": 3, "question": "Name three primary colors.", "category": "knowledge", "expected_contains": ["red"]},
+    {"id": 4, "question": "What is the capital of France?", "category": "geography", "expected_contains": ["paris"]}
+  ]
+}

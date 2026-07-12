@@ -1,0 +1,9 @@
+{
+  "name": "Parallel Experts 专用",
+  "description": "多视角独立分析场景，验证并行执行和结果汇总能力",
+  "recommended_for": ["parallel", "fan_out_fan_in"],
+  "test_cases": [
+    {"id": 1, "question": "From three independent perspectives (performance, security, usability), evaluate: password-based authentication.", "category": "multi_perspective", "expected_contains": ["password", "authentication"]},
+    {"id": 2, "question": "Analyze from factual, logical, and practical perspectives: Is remote work better than office work?", "category": "multi_perspective", "expected_contains": ["remote", "work"]}
+  ]
+}

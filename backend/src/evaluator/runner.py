@@ -57,7 +57,11 @@ class EvaluationRunner:
 
             try:
                 executor = FlowExecutor(self.canvas)
-                exec_result = await executor.execute(question)
+                # v0.7: 单题超时保护（最多 5 分钟）
+                exec_result = await asyncio.wait_for(
+                    executor.execute(question),
+                    timeout=300,
+                )
 
                 output = exec_result.get("final_output", "")
                 error = exec_result.get("error", "")
@@ -71,6 +75,12 @@ class EvaluationRunner:
                 else:
                     success = False
 
+            except asyncio.TimeoutError:
+                output = ""
+                error = f"Timeout: question exceeded 300s limit"
+                latency_ms = 300000
+                tokens = 0
+                success = False
             except Exception as e:
                 output = ""
                 error = str(e)

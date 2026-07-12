@@ -1,0 +1,10 @@
+{
+  "name": "Supervisor-Worker 专用",
+  "description": "任务拆解 + 并行执行场景，验证 Dispatcher 拆解能力和 Worker 独立执行能力",
+  "recommended_for": ["fan_out_fan_in", "supervisor_worker"],
+  "test_cases": [
+    {"id": 1, "question": "Analyze this task from three perspectives and give a comprehensive answer: What are the pros and cons of Python as a programming language?", "category": "analysis", "expected_contains": ["pros", "cons"]},
+    {"id": 2, "question": "Compare React and Vue from three angles: performance, ecosystem, learning curve.", "category": "comparison", "expected_contains": ["react", "vue"]},
+    {"id": 3, "question": "Research the following topic and give three key insights: benefits of open source software.", "category": "research", "expected_contains": ["open source"]}
+  ]
+}

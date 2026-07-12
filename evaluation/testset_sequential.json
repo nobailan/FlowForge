@@ -1,0 +1,10 @@
+{
+  "name": "Sequential Chain 专用",
+  "description": "流水线串行处理场景，验证步骤间的数据传递和顺序执行",
+  "recommended_for": ["sequential"],
+  "test_cases": [
+    {"id": 1, "question": "Process this data step by step: (1) List the numbers 1 through 5, (2) Square each number, (3) Sum the results.", "category": "pipeline", "expected_contains": ["55"]},
+    {"id": 2, "question": "Step 1: Count the vowels in 'hello world'. Step 2: Multiply that count by 10. Output the final number.", "category": "pipeline", "expected_contains": ["30"]},
+    {"id": 3, "question": "Step 1: Reverse the string 'abcdef'. Step 2: Convert to uppercase. Output the result.", "category": "pipeline", "expected_contains": ["FEDCBA"]}
+  ]
+}

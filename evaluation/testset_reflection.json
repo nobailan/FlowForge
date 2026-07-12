@@ -1,0 +1,9 @@
+{
+  "name": "Reflection Loop 专用",
+  "description": "质量迭代改进场景，验证反思和改进循环的收敛能力",
+  "recommended_for": ["cyclic", "reflection_loop"],
+  "test_cases": [
+    {"id": 1, "question": "Write a one-sentence explanation of recursion, then improve it until it is clear and accurate.", "category": "improvement", "expected_contains": ["function", "itself"]},
+    {"id": 2, "question": "Write a haiku about programming. Improve it if it doesn't follow the 5-7-5 syllable pattern.", "category": "improvement", "expected_contains": ["code"]}
+  ]
+}
