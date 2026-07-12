@@ -2,8 +2,8 @@ import { apiGet, apiPost } from './client';
 import type { EvaluationResult, CompareResult } from '../types/evaluation';
 
 export const evaluateApi = {
-  run: (architecture_id: string, testset_id: string) =>
-    apiPost<EvaluationResult>('/evaluate/', { architecture_id, testset_id }),
+  run: (architecture_id: string, testset_id: string, kernel?: string) =>
+    apiPost<EvaluationResult>('/evaluate/', { architecture_id, testset_id, kernel: kernel || 'opencode' }),
 
   getResult: (runId: string) =>
     apiGet<EvaluationResult>(`/evaluate/runs/${runId}`),

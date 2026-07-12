@@ -30,14 +30,15 @@ class EvaluationRunner:
     """评估运行器 —— 对架构在测试集上的表现进行批量评测。
 
     用法：
-        runner = EvaluationRunner(canvas_data, test_cases)
+        runner = EvaluationRunner(canvas_data, test_cases, kernel="kunkun")
         result = await runner.run()
         # result 包含 summary + details
     """
 
-    def __init__(self, canvas_data: dict, test_cases: list[dict]):
+    def __init__(self, canvas_data: dict, test_cases: list[dict], kernel: str = "opencode"):
         self.canvas = canvas_data
         self.test_cases = test_cases
+        self.kernel = kernel
 
     async def run(self) -> dict:
         """并行执行 test cases（v0.7: 信号量限制并发数，避免压垮 DeepSeek）。"""
@@ -58,7 +59,7 @@ class EvaluationRunner:
                 success = False
 
                 try:
-                    executor = FlowExecutor(self.canvas)
+                    executor = FlowExecutor(self.canvas, kernel=self.kernel)
                     exec_result = await asyncio.wait_for(
                         executor.execute(question),
                         timeout=300,

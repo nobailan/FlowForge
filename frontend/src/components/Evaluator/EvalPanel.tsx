@@ -25,6 +25,7 @@ interface TopoRecommendation {
 export default function EvalPanel() {
   const setRightPanel = useAppStore((s) => s.setRightPanel);
   const currentArchitectureId = useAppStore((s) => s.currentArchitectureId);
+  const kernel = useAppStore((s) => s.kernel);
   // v0.7: 结果持久化在 appStore，关掉不丢失
   const evalDetailResults = useAppStore((s) => s.evalDetailResults);
   const setEvalDetailResults = useAppStore((s) => s.setEvalDetailResults);
@@ -98,7 +99,7 @@ export default function EvalPanel() {
 
       const selectedSet = testSets.find((t) => t.id === selectedSetId);
       setMessage(`正在使用 "${selectedSet?.name || selectedSetId}" 运行评测...`);
-      const evalResult = await evaluateApi.run(archId, selectedSetId);
+      const evalResult = await evaluateApi.run(archId, selectedSetId, kernel);
 
       const pollInterval = setInterval(async () => {
         const updated = await evaluateApi.getResult(evalResult.id);
