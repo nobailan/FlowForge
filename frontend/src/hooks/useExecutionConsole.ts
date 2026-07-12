@@ -20,6 +20,11 @@ export interface StreamingEvent {
   node_label?: string;
   tool_call_count?: number;
   timestamp: number;
+  // v0.7: Kunkun 专属
+  kernel?: string;
+  cost_usd?: number;
+  thinking_score?: number;
+  task_score?: number;
 }
 
 export interface ActivityLogEntry {
@@ -38,6 +43,11 @@ export interface NodeActivity {
   tokens: number;
   startTime: number | null;
   endTime: number | null;
+  // v0.7: Kunkun
+  kernel?: string;
+  costUsd: number;
+  thinkingScore: number;
+  taskScore: number;
 }
 
 export function useExecutionConsole() {
@@ -55,6 +65,9 @@ export function useExecutionConsole() {
         tokens: 0,
         startTime: null,
         endTime: null,
+        costUsd: 0,
+        thinkingScore: -1,
+        taskScore: -1,
       };
     }
     return nodesRef.current[nodeId];
@@ -127,12 +140,16 @@ export function useExecutionConsole() {
           const isError = ev.event_type === 'error';
           node.status = isError ? 'error' : 'completed';
           node.endTime = ev.timestamp;
-          // v0.6: 取精确 token 值
           const tok = ev.tokens || (ev.tokens_input || 0) + (ev.tokens_output || 0);
           if (node.tokens === 0) {
             node.tokens = tok;
             tokenRef.current += tok;
           }
+          // v0.7: Kunkun 指标
+          node.kernel = ev.kernel;
+          node.costUsd = ev.cost_usd || 0;
+          node.thinkingScore = ev.thinking_score ?? -1;
+          node.taskScore = ev.task_score ?? -1;
           node.logs.push({
             timestamp: ev.timestamp,
             nodeId: ev.node_id,

@@ -11,6 +11,8 @@ export default function ExecutionConsole() {
   const executionId = useAppStore((s) => s.executionId);
   const setRightPanel = useAppStore((s) => s.setRightPanel);
   const { nodeActivities, totalTokens, addEvent, reset } = useExecutionConsole();
+  const totalCost = Object.values(nodeActivities).reduce((s, n) => s + (n.costUsd || 0), 0);
+  const kernel = Object.values(nodeActivities).find(n => n.kernel)?.kernel;
   const nodes = useCanvasStore((s) => s.nodes);
   const [elapsed, setElapsed] = useState(0);
   const [replaying, setReplaying] = useState(false);
@@ -189,7 +191,13 @@ export default function ExecutionConsole() {
       <div className="px-4 py-2 border-b border-[#555]">
         <div className="flex justify-between text-[10px] text-[#999] mb-1">
           <span>进度 {completedCount}/{totalNodes} 节点</span>
-          <span className="text-yellow-400 font-mono">{totalTokens.toLocaleString()} token</span>
+          <span className="text-yellow-400 font-mono">{totalTokens.toLocaleString()}T</span>
+          {totalCost > 0 && (
+            <span className="text-green-400 font-mono text-[10px]">${totalCost.toFixed(4)}</span>
+          )}
+          {kernel && (
+            <span className="text-[10px] text-purple-400">{kernel === 'kunkun' ? '🐟鲲' : '📡'}</span>
+          )}
           <span className="text-[#999]">{elapsed}s</span>
         </div>
         <div className="w-full bg-gray-700 rounded-full h-1.5">

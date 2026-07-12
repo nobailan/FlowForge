@@ -63,6 +63,14 @@ export default function NodeActivityCard({ nodeId, nodeLabel, nodeType, activity
         {activity?.tokens ? (
           <span className="text-[10px] text-yellow-400 font-mono">{activity.tokens}T</span>
         ) : null}
+        {activity?.kernel === 'kunkun' && activity?.costUsd > 0 ? (
+          <span className="text-[10px] text-green-400 font-mono">${activity.costUsd.toFixed(4)}</span>
+        ) : null}
+        {activity?.thinkingScore >= 0 ? (
+          <span className="text-[10px] text-purple-400" title={`思考评分: ${activity.thinkingScore}/5`}>
+            🧠{activity.thinkingScore.toFixed(1)}
+          </span>
+        ) : null}
         {elapsed ? (
           <span className="text-[10px] text-[#ccc]">{elapsed}</span>
         ) : null}

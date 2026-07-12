@@ -27,6 +27,12 @@ class NodeResult:
     tool_call_log: list[dict] = field(default_factory=list)
     streaming_events: list[dict] = field(default_factory=list)
     raw: dict = field(default_factory=dict)
+    # v0.7: Kunkun 专属字段
+    kernel: str = ""               # opencode | kunkun
+    cost_usd: float = 0.0          # 美元成本
+    thinking_score: float = -1     # AgentThink 思考质量评分 (-1=未评测)
+    task_score: float = -1         # AdaRubric 任务完成评分 (-1=未评测)
+    thinking_events: list[dict] = field(default_factory=list)  # 思考截断/重路由事件
 
 
 # 节点类型 → OpenCode Agent 映射
@@ -215,6 +221,7 @@ class AgentNodeAdapter:
                 ],
                 streaming_events=bridge.get_events(),
                 raw=result.raw,
+                kernel="opencode",
             )
 
         except asyncio.TimeoutError:
@@ -265,7 +272,17 @@ class AgentNodeAdapter:
             elapsed_ms = int((time.time() - start_time) * 1000)
             tokens_val = sum(result.tokens.values()) if result.tokens else 0
 
-            # 推送 node:end 事件
+            # 提取 Kunkun 独特指标
+            think_score = -1.0
+            task_score = -1.0
+            t_events: list[dict] = []
+            if result.thinking_eval:
+                think_score = result.thinking_eval.get("overall", -1)
+                t_events = result.thinking_eval.get("events", [])
+            if result.task_eval:
+                task_score = result.task_eval.get("overall", -1)
+
+            # 推送 node:end（携带 Kunkun 指标）
             from .monitor_bridge import _stream_queue, make_event, EVENT_NODE_END
             _stream_queue.put(make_event(
                 EVENT_NODE_END, execution_id, node_id,
@@ -274,6 +291,10 @@ class AgentNodeAdapter:
                 tokens=tokens_val,
                 latency_ms=elapsed_ms,
                 tool_call_count=result.tool_calls,
+                kernel="kunkun",
+                cost_usd=result.cost_usd,
+                thinking_score=think_score,
+                task_score=task_score,
             ))
 
             return NodeResult(
@@ -284,6 +305,11 @@ class AgentNodeAdapter:
                 status="completed" if result.success else "error",
                 error="" if result.success else result.output,
                 tool_call_count=result.tool_calls,
+                kernel="kunkun",
+                cost_usd=result.cost_usd,
+                thinking_score=think_score,
+                task_score=task_score,
+                thinking_events=t_events,
             )
 
         except Exception as e:

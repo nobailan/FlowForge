@@ -172,7 +172,7 @@ def llm_node_factory(node_id: str, config: dict):
             return state
 
         # 写入结果
-        state.setdefault("node_outputs", {})[node_id] = {
+        node_data = {
             "output": result.output,
             "tokens": result.tokens,
             "latency_ms": result.latency_ms,
@@ -180,7 +180,14 @@ def llm_node_factory(node_id: str, config: dict):
             "node_type": "llm",
             "tool_calls": result.tool_call_count,
             "streaming_events": result.streaming_events,
+            "kernel": result.kernel,
         }
+        # v0.7: Kunkun 专属指标
+        if result.kernel == "kunkun":
+            node_data["cost_usd"] = result.cost_usd
+            node_data["thinking_score"] = result.thinking_score
+            node_data["task_score"] = result.task_score
+        state.setdefault("node_outputs", {})[node_id] = node_data
 
         state["node_timeline"].append({
             "node_id": node_id, "node_type": "llm", "status": result.status,
