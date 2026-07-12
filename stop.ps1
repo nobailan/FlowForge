@@ -9,10 +9,10 @@ $pidFile = Join-Path $PSScriptRoot ".flowforge_pids.txt"
 if (Test-Path $pidFile) {
     Write-Host "[Windows] Closing service windows..." -ForegroundColor Cyan
     Get-Content $pidFile | ForEach-Object {
-        $pid = $_.Trim()
-        if ($pid) {
-            Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
-            Write-Host "  PID $pid closed"
+        $winPid = $_.Trim()
+        if ($winPid) {
+            Stop-Process -Id $winPid -Force -ErrorAction SilentlyContinue
+            Write-Host "  PID $winPid closed"
         }
     }
     Remove-Item $pidFile -Force
