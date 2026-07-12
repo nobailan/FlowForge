@@ -86,6 +86,10 @@ export default function ExecutionConsole() {
               tokens_input: d.token_count || 0,
               text: (d.output_summary || '').slice(0, 200),
               timestamp: d.timestamp || Date.now() / 1000,
+              kernel: (d as any).kernel || '',
+              cost_usd: (d as any).cost_usd || 0,
+              thinking_score: (d as any).thinking_score ?? -1,
+              task_score: (d as any).task_score ?? -1,
             });
           }
         }
@@ -117,6 +121,10 @@ export default function ExecutionConsole() {
               event_type: nd.status === 'error' ? 'error' : 'completed',
               tokens_input: nd.tokens || 0,
               timestamp: Date.now() / 1000,
+              kernel: nd.kernel || '',
+              cost_usd: nd.cost_usd || 0,
+              thinking_score: nd.thinking_score ?? -1,
+              task_score: nd.task_score ?? -1,
             });
           }
           useAppStore.getState().setExecutionStatus(data.status);
