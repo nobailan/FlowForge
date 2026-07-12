@@ -73,6 +73,7 @@ export default function EvalPanel() {
   );
 
   const handleRunEval = async () => {
+    console.log('[EvalPanel] handleRunEval called', { archId: currentArchitectureId, setId: selectedSetId, kernel });
     setLoading(true);
     setError('');
     setMessage('正在保存架构...');
@@ -205,8 +206,8 @@ export default function EvalPanel() {
 
             <button
               onClick={handleRunEval}
-              disabled={!selectedSetId}
-              className="w-full px-4 py-2 bg-[#1e3a2f] text-white text-sm rounded hover:bg-green-600 transition-colors disabled:opacity-50"
+              className="w-full px-4 py-2 bg-[#1e3a2f] text-white text-sm rounded hover:bg-green-600 transition-colors"
+              title={`使用 ${kernel} 内核运行评测`}
             >
               ▶ 运行评测
             </button>
