@@ -35,7 +35,7 @@ class EvaluationRunner:
         # result 包含 summary + details
     """
 
-    def __init__(self, canvas_data: dict, test_cases: list[dict], kernel: str = "opencode"):
+    def __init__(self, canvas_data: dict, test_cases: list[dict], kernel: str = "kunkun"):
         self.canvas = canvas_data
         self.test_cases = test_cases
         self.kernel = kernel

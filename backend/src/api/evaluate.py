@@ -49,11 +49,10 @@ async def run_evaluation(data: EvaluateRequest, background_tasks: BackgroundTask
     db.refresh(eval_run)
 
     # 后台执行评估 — 使用独立 DB session
-    kernel = getattr(data, "kernel", "opencode") if hasattr(data, "kernel") else "opencode"
     async def run_eval():
         bg_db = SessionLocal()
         try:
-            runner = EvaluationRunner(arch.canvas_data, ts.test_cases, kernel=kernel)
+            runner = EvaluationRunner(arch.canvas_data, ts.test_cases, kernel=data.kernel)
             result = await runner.run()
             bg_run = bg_db.query(EvaluationRun).filter(EvaluationRun.id == eval_run.id).first()
             if bg_run:

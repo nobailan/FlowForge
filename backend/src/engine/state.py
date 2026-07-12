@@ -54,7 +54,7 @@ class AgentState(TypedDict, total=False):
 
 
 def create_initial_state(user_input: str, execution_id: str = "default",
-                         kernel: str = "opencode") -> dict:
+                         kernel: str = "kunkun") -> dict:
     """创建初始状态。返回普通 dict，LangGraph 会按 Annotated 规则合并。"""
     return {
         "messages": [],

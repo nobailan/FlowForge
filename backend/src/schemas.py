@@ -64,7 +64,7 @@ class ArchitectureDetail(ArchitectureSummary):
 class ExecuteRequest(BaseModel):
     canvas_data: CanvasData
     input_text: str
-    kernel: str = "opencode"  # opencode | kunkun
+    kernel: str = "kunkun"  # kunkun | opencode
 
 
 class ExecuteResponse(BaseModel):
@@ -103,6 +103,7 @@ class ExecutionResult(BaseModel):
 class EvaluateRequest(BaseModel):
     architecture_id: str
     testset_id: str
+    kernel: str = "kunkun"
 
 
 class EvalSummary(BaseModel):

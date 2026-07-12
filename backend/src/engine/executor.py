@@ -15,7 +15,7 @@ class FlowExecutor:
     """编排一次完整的流程执行。"""
 
     def __init__(self, canvas_data: dict, execution_id: str | None = None,
-                 kernel: str = "opencode"):
+                 kernel: str = "kunkun"):
         self.canvas = canvas_data
         self.execution_id = execution_id or str(uuid.uuid4())
         self.kernel = kernel

@@ -40,7 +40,7 @@ interface AppStore {
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
-  kernel: 'opencode',
+  kernel: 'kunkun',
   setKernel: (kernel) => set({ kernel }),
 
   currentArchitectureId: null,
