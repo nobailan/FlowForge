@@ -1,0 +1,282 @@
+{
+  "session_id": "7ac3da13-7311-44dc-8721-bba00199fd61",
+  "started_at": "2026-07-12T10:32:15.951713",
+  "elapsed_seconds": 3.23,
+  "metadata": {},
+  "summary": {
+    "total_events": 30,
+    "tool_calls": 0,
+    "errors": 0
+  },
+  "events": [
+    {
+      "type": "message_start",
+      "data": {},
+      "timestamp": 1783823536.088775,
+      "turn": 0
+    },
+    {
+      "type": "content_block_start",
+      "data": {
+        "type": "thinking"
+      },
+      "timestamp": 1783823537.153958,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": "The"
+      },
+      "timestamp": 1783823537.153958,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " user"
+      },
+      "timestamp": 1783823537.292043,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " wants"
+      },
+      "timestamp": 1783823537.337746,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " me"
+      },
+      "timestamp": 1783823537.337746,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " to"
+      },
+      "timestamp": 1783823537.337746,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " say"
+      },
+      "timestamp": 1783823537.337746,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " \""
+      },
+      "timestamp": 1783823537.375488,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": "HE"
+      },
+      "timestamp": 1783823537.375488,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": "LL"
+      },
+      "timestamp": 1783823537.375488,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": "O"
+      },
+      "timestamp": 1783823537.375488,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " WORLD"
+      },
+      "timestamp": 1783823537.375488,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": "\""
+      },
+      "timestamp": 1783823537.375488,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " exactly"
+      },
+      "timestamp": 1783823537.419385,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": "."
+      },
+      "timestamp": 1783823537.420209,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " Let"
+      },
+      "timestamp": 1783823537.420209,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " me"
+      },
+      "timestamp": 1783823537.465437,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " just"
+      },
+      "timestamp": 1783823537.465437,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " output"
+      },
+      "timestamp": 1783823537.465437,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " that"
+      },
+      "timestamp": 1783823537.508918,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": "."
+      },
+      "timestamp": 1783823537.508918,
+      "turn": 0
+    },
+    {
+      "type": "content_block_stop",
+      "data": {
+        "type": "thinking"
+      },
+      "timestamp": 1783823537.508918,
+      "turn": 0
+    },
+    {
+      "type": "content_block_start",
+      "data": {
+        "type": "text"
+      },
+      "timestamp": 1783823537.508918,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "text",
+        "text": "HE"
+      },
+      "timestamp": 1783823537.508918,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "text",
+        "text": "LL"
+      },
+      "timestamp": 1783823537.554317,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "text",
+        "text": "O"
+      },
+      "timestamp": 1783823537.554317,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "text",
+        "text": " WORLD"
+      },
+      "timestamp": 1783823537.554317,
+      "turn": 0
+    },
+    {
+      "type": "content_block_stop",
+      "data": {
+        "type": "text"
+      },
+      "timestamp": 1783823537.555326,
+      "turn": 0
+    },
+    {
+      "type": "message_stop",
+      "data": {
+        "stop_reason": "end_turn",
+        "usage": {
+          "input_tokens": 3938,
+          "output_tokens": 25,
+          "thinking_tokens": 20
+        },
+        "thinking_content": "The user wants me to say \"HELLO WORLD\" exactly. Let me just output that.",
+        "text_content": "HELLO WORLD"
+      },
+      "timestamp": 1783823537.555326,
+      "turn": 0
+    }
+  ]
+}

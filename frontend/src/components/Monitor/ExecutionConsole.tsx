@@ -115,16 +115,20 @@ export default function ExecutionConsole() {
           const nodeOutputs = data.output_data?.node_outputs || {};
           for (const [nid, ndata] of Object.entries(nodeOutputs)) {
             const nd = ndata as any;
+            // v0.7: 统一用 node:end 事件，确保 Kunkun 字段被处理
             addEvent({
               execution_id: executionId,
               node_id: nid,
+              event: 'node:end',  // 路由到正确的 handler
               event_type: nd.status === 'error' ? 'error' : 'completed',
+              tokens: nd.tokens || 0,
               tokens_input: nd.tokens || 0,
               timestamp: Date.now() / 1000,
               kernel: nd.kernel || '',
               cost_usd: nd.cost_usd || 0,
               thinking_score: nd.thinking_score ?? -1,
               task_score: nd.task_score ?? -1,
+              output_preview: (nd.output || '').slice(0, 200),
             });
           }
           useAppStore.getState().setExecutionStatus(data.status);

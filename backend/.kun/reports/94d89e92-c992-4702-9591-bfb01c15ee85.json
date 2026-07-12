@@ -1,0 +1,291 @@
+{
+  "session_id": "94d89e92-c992-4702-9591-bfb01c15ee85",
+  "started_at": "2026-07-12T10:30:42.970133",
+  "elapsed_seconds": 4.0,
+  "metadata": {},
+  "summary": {
+    "total_events": 31,
+    "tool_calls": 0,
+    "errors": 0
+  },
+  "events": [
+    {
+      "type": "message_start",
+      "data": {},
+      "timestamp": 1783823443.242142,
+      "turn": 0
+    },
+    {
+      "type": "content_block_start",
+      "data": {
+        "type": "thinking"
+      },
+      "timestamp": 1783823444.495551,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": "The"
+      },
+      "timestamp": 1783823444.495551,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " user"
+      },
+      "timestamp": 1783823444.635284,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " wants"
+      },
+      "timestamp": 1783823444.683398,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " me"
+      },
+      "timestamp": 1783823444.683398,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " to"
+      },
+      "timestamp": 1783823444.683398,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " say"
+      },
+      "timestamp": 1783823444.683398,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " HE"
+      },
+      "timestamp": 1783823444.720822,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": "LL"
+      },
+      "timestamp": 1783823444.767931,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": "O"
+      },
+      "timestamp": 1783823444.767931,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " in"
+      },
+      "timestamp": 1783823444.767931,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " one"
+      },
+      "timestamp": 1783823444.767931,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " word"
+      },
+      "timestamp": 1783823444.767931,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": "."
+      },
+      "timestamp": 1783823444.767931,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " The"
+      },
+      "timestamp": 1783823444.811444,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " answer"
+      },
+      "timestamp": 1783823444.853854,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " is"
+      },
+      "timestamp": 1783823444.890819,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " simply"
+      },
+      "timestamp": 1783823444.890819,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": " \""
+      },
+      "timestamp": 1783823444.890819,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": "HE"
+      },
+      "timestamp": 1783823444.9392,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": "LL"
+      },
+      "timestamp": 1783823444.9392,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": "O"
+      },
+      "timestamp": 1783823444.9392,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "thinking",
+        "text": "\"."
+      },
+      "timestamp": 1783823444.9392,
+      "turn": 0
+    },
+    {
+      "type": "content_block_stop",
+      "data": {
+        "type": "thinking"
+      },
+      "timestamp": 1783823444.98167,
+      "turn": 0
+    },
+    {
+      "type": "content_block_start",
+      "data": {
+        "type": "text"
+      },
+      "timestamp": 1783823444.98167,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "text",
+        "text": "HE"
+      },
+      "timestamp": 1783823444.98167,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "text",
+        "text": "LL"
+      },
+      "timestamp": 1783823444.98167,
+      "turn": 0
+    },
+    {
+      "type": "content_block_delta",
+      "data": {
+        "type": "text",
+        "text": "O"
+      },
+      "timestamp": 1783823444.98167,
+      "turn": 0
+    },
+    {
+      "type": "content_block_stop",
+      "data": {
+        "type": "text"
+      },
+      "timestamp": 1783823444.98167,
+      "turn": 0
+    },
+    {
+      "type": "message_stop",
+      "data": {
+        "stop_reason": "end_turn",
+        "usage": {
+          "input_tokens": 3932,
+          "output_tokens": 26,
+          "thinking_tokens": 22
+        },
+        "thinking_content": "The user wants me to say HELLO in one word. The answer is simply \"HELLO\".",
+        "text_content": "HELLO"
+      },
+      "timestamp": 1783823444.98167,
+      "turn": 0
+    }
+  ]
+}

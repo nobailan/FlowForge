@@ -136,28 +136,31 @@ export function useExecutionConsole() {
         break;
 
       case 'node:end':
-        if (node.status !== 'completed' && node.status !== 'error') {
+        {
           const isError = ev.event_type === 'error';
-          node.status = isError ? 'error' : 'completed';
-          node.endTime = ev.timestamp;
-          const tok = ev.tokens || (ev.tokens_input || 0) + (ev.tokens_output || 0);
-          if (node.tokens === 0) {
-            node.tokens = tok;
-            tokenRef.current += tok;
+          // 首次完成时设置状态和 token
+          if (node.status !== 'completed' && node.status !== 'error') {
+            node.status = isError ? 'error' : 'completed';
+            node.endTime = ev.timestamp;
+            const tok = ev.tokens || (ev.tokens_input || 0) + (ev.tokens_output || 0);
+            if (node.tokens === 0) {
+              node.tokens = tok;
+              tokenRef.current += tok;
+            }
+            node.logs.push({
+              timestamp: ev.timestamp,
+              nodeId: ev.node_id,
+              eventType: isError ? 'error' : 'completed',
+              text: ev.output_preview || (isError ? 'Error' : 'Completed'),
+              toolName: '',
+              toolInput: '',
+            });
           }
-          // v0.7: Kunkun 指标
+          // v0.7: Kunkun 指标始终更新（即使已被轮询先标记为完成）
           node.kernel = ev.kernel;
           node.costUsd = ev.cost_usd || 0;
           node.thinkingScore = ev.thinking_score ?? -1;
           node.taskScore = ev.task_score ?? -1;
-          node.logs.push({
-            timestamp: ev.timestamp,
-            nodeId: ev.node_id,
-            eventType: isError ? 'error' : 'completed',
-            text: ev.output_preview || (isError ? 'Error' : 'Completed'),
-            toolName: '',
-            toolInput: '',
-          });
         }
         break;
 
@@ -206,6 +209,11 @@ export function useExecutionConsole() {
           node.tokens = (ev.tokens_input || 0) + (ev.tokens_output || 0);
           tokenRef.current += node.tokens;
         }
+        // v0.7: 即使已被标记完成，也更新 Kunkun 指标
+        if (ev.kernel) node.kernel = ev.kernel;
+        if (ev.cost_usd) node.costUsd = ev.cost_usd;
+        if (ev.thinking_score !== undefined) node.thinkingScore = ev.thinking_score;
+        if (ev.task_score !== undefined) node.taskScore = ev.task_score;
         break;
 
       case 'error':
