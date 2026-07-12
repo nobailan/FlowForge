@@ -12,7 +12,8 @@
 | v0.3 | 可视化 | 暗色主题 + 执行控制台 + 实时监控 |
 | v0.4 | 自动化 | 拓扑分析引擎 + Auto Prompt 生成 + Apply & Run |
 | v0.5 | Token 优化 | 工件存储 + JSON 约束 + 工具按需加载 + 滑动窗口 |
-| **v0.6** | **实时监控** | **队列桥接跨 event loop 推送，thinking/工具调用实时可见** |
+| v0.6 | 实时监控 | 队列桥接跨 event loop 推送，thinking/工具调用实时可见 |
+| **v0.7** | **工程化** | **Docker 一键部署 + 执行回放 + EvalPanel 修复** |
 
 ## 核心特性
 
@@ -27,14 +28,18 @@
 
 ## 快速启动
 
-### 环境要求
+### Docker 一键部署（推荐）
 
-- Python 3.11+
-- Node.js 18+ & Bun 1.3+
-- PostgreSQL 16
-- Redis 5.0+ (已内置在 E:\redis\，start.ps1 自动启动)
+```bash
+docker compose up -d
+```
 
-### 一键启动
+启动 PostgreSQL + Redis + Backend(8000) + Frontend(5173)。
+OpenCode 需单独启动（依赖 Bun 运行时）。
+
+### 本地启动
+
+环境要求：Python 3.11+ / Node.js 18+ & Bun 1.3+ / PostgreSQL 16 / Redis 5.0+
 
 ```powershell
 .\start.ps1

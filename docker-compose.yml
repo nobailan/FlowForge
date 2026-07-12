@@ -1,3 +1,8 @@
+# FlowForge v0.7 — Docker Compose
+# 一键启动: docker compose up -d
+# 服务: PostgreSQL + Redis + Backend + Frontend
+# OpenCode 需要单独启动（依赖 Bun 运行时）
+
 version: '3.8'
 
 services:
@@ -17,6 +22,16 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   backend:
     build:
       context: ./backend
@@ -26,8 +41,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://postgres:${DB_PASSWORD}@db:5432/flowforge
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD:-flowforge}@db:5432/flowforge
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       ANTHROPIC_BASE_URL: https://api.deepseek.com/anthropic
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       ANTHROPIC_MODEL: deepseek-v4-pro
@@ -42,8 +61,6 @@ services:
       - "5173:5173"
     depends_on:
       - backend
-    environment:
-      VITE_API_BASE_URL: http://localhost:8000
 
 volumes:
   pgdata:

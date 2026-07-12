@@ -150,6 +150,42 @@ def get_execution_events(execution_id: str, db: Session = Depends(get_db)):
     return run.node_events or []
 
 
+@router.get("/{execution_id}/replay")
+def get_execution_replay(execution_id: str, db: Session = Depends(get_db)):
+    """获取执行的流式事件回放数据。"""
+    run = db.query(ExecutionRun).filter(ExecutionRun.id == execution_id).first()
+    if not run:
+        raise HTTPException(status_code=404, detail="Execution not found")
+
+    output_data = run.output_data or {}
+    node_outputs = output_data.get("node_outputs", {}) if isinstance(output_data, dict) else {}
+
+    # 收集所有节点的流式事件，按时间排序
+    all_events = []
+    for nid, ndata in node_outputs.items():
+        streaming_events = ndata.get("streaming_events", []) if isinstance(ndata, dict) else []
+        for ev in streaming_events:
+            all_events.append({
+                "node_id": nid,
+                "timestamp": ev.get("timestamp", 0),
+                "event": ev.get("event", ev.get("event_type", "")),
+                "text": ev.get("text", ""),
+                "tool_name": ev.get("tool_name", ""),
+                "tool_input": ev.get("tool_input", ""),
+                "summary": ev.get("summary", ""),
+            })
+
+    all_events.sort(key=lambda e: e["timestamp"])
+
+    return {
+        "execution_id": execution_id,
+        "status": run.status,
+        "total_events": len(all_events),
+        "total_tokens": run.total_tokens or 0,
+        "events": all_events,
+    }
+
+
 @router.websocket("/{execution_id}/ws")
 async def websocket_execution(websocket: WebSocket, execution_id: str):
     """WebSocket 端点 —— 实时接收节点执行事件。"""

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useAppStore } from '../../store/appStore';
 import { useCanvasStore } from '../../store/canvasStore';
 import { useExecutionConsole, type StreamingEvent } from '../../hooks/useExecutionConsole';
@@ -13,8 +13,43 @@ export default function ExecutionConsole() {
   const { nodeActivities, totalTokens, addEvent, reset } = useExecutionConsole();
   const nodes = useCanvasStore((s) => s.nodes);
   const [elapsed, setElapsed] = useState(0);
+  const [replaying, setReplaying] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+
+  // v0.7: 执行回放
+  const handleReplay = useCallback(async () => {
+    if (!executionId || replaying) return;
+    setReplaying(true);
+    reset();
+    try {
+      const resp = await fetch(`/api/execute/${executionId}/replay`);
+      const data = await resp.json();
+      const events: any[] = data.events || [];
+      if (events.length === 0) {
+        setReplaying(false);
+        return;
+      }
+      // 按时间间隔回放，加速 3 倍
+      let prevTime = events[0].timestamp;
+      for (const ev of events) {
+        const delay = Math.max(0, (ev.timestamp - prevTime) * 1000) / 3; // 3x speed
+        prevTime = ev.timestamp;
+        await new Promise((r) => setTimeout(r, Math.min(delay, 500))); // cap at 500ms
+        addEvent({
+          execution_id: executionId!,
+          node_id: ev.node_id,
+          event: ev.event,
+          text: ev.text,
+          tool_name: ev.tool_name,
+          tool_input: ev.tool_input,
+          summary: ev.summary,
+          timestamp: Date.now() / 1000,
+        } as StreamingEvent);
+      }
+    } catch (_) {}
+    setReplaying(false);
+  }, [executionId, replaying, addEvent, reset]);
 
   // Connect WebSocket
   useEffect(() => {
@@ -133,10 +168,21 @@ export default function ExecutionConsole() {
           <h3 className="font-semibold text-sm text-[#eee]">⚡ 执行控制台</h3>
           <p className="text-[10px] text-[#999]">ID: {executionId?.slice(0, 8)}...</p>
         </div>
-        <button
-          onClick={() => setRightPanel(null)}
-          className="text-[#999] hover:text-[#ddd] text-lg leading-none"
-        >×</button>
+        <div className="flex gap-1">
+          {(executionStatus === 'completed' || executionStatus === 'failed') && (
+            <button
+              onClick={handleReplay}
+              disabled={replaying}
+              className="px-2 py-0.5 text-[10px] bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50"
+            >
+              {replaying ? '⏳ 回放中...' : '🔁 回放'}
+            </button>
+          )}
+          <button
+            onClick={() => setRightPanel(null)}
+            className="text-[#999] hover:text-[#ddd] text-lg leading-none"
+          >×</button>
+        </div>
       </div>
 
       {/* Global progress */}

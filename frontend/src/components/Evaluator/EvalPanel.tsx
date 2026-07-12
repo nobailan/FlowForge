@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useAppStore } from '../../store/appStore';
 import { useCanvasStore } from '../../store/canvasStore';
 import { evaluateApi } from '../../api/evaluate';
@@ -6,16 +6,20 @@ import MetricsCards from './MetricsCards';
 import PerQuestionTable from './PerQuestionTable';
 import type { EvaluationResult } from '../../types/evaluation';
 
+// 空 canvas 常量，避免每次创建新对象导致无限重渲染
+const EMPTY_CANVAS = { nodes: [] as any[], edges: [] as any[] };
+
 export default function EvalPanel() {
   const setRightPanel = useAppStore((s) => s.setRightPanel);
   const currentArchitectureId = useAppStore((s) => s.currentArchitectureId);
-  const canvasData = useCanvasStore((s) => {
+
+  const getCanvasData = useCallback(() => {
     try {
-      return s.toCanvasJSON();
+      return useCanvasStore.getState().toCanvasJSON();
     } catch {
-      return { nodes: [], edges: [] };
+      return EMPTY_CANVAS;
     }
-  });
+  }, []);
 
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<EvaluationResult | null>(null);
@@ -35,7 +39,7 @@ export default function EvalPanel() {
         const arch = await graphsApi.create(
           useAppStore.getState().architectureName || 'Untitled',
           '',
-          canvasData
+          getCanvasData()
         );
         archId = arch.id;
         useAppStore.getState().setArchitectureId(archId);
