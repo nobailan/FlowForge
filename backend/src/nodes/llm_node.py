@@ -113,20 +113,17 @@ def llm_node_factory(node_id: str, config: dict):
         if passthrough is not None or max_steps_val <= 0:
             output = passthrough if passthrough is not None else "READY"
             elapsed_ms = int((time.time() - start_time) * 1000)
-            state.setdefault("node_outputs", {})[node_id] = {
-                "output": output,
-                "tokens": 0,
-                "latency_ms": elapsed_ms,
-                "status": "completed",
-                "node_type": "llm",
-                "tool_calls": 0,
+            return {
+                "node_outputs": {node_id: {
+                    "output": output, "tokens": 0, "latency_ms": elapsed_ms,
+                    "status": "completed", "node_type": "llm", "tool_calls": 0,
+                }},
+                "node_timeline": [{
+                    "node_id": node_id, "node_type": "llm", "status": "completed",
+                    "tokens": 0, "latency_ms": elapsed_ms,
+                    "output_preview": output[:200],
+                }],
             }
-            state["node_timeline"].append({
-                "node_id": node_id, "node_type": "llm", "status": "completed",
-                "tokens": 0, "latency_ms": elapsed_ms,
-                "output_preview": output[:200],
-            })
-            return state
 
         try:
             kernel = state.get("kernel", "opencode")
@@ -155,21 +152,19 @@ def llm_node_factory(node_id: str, config: dict):
 
         except Exception as e:
             elapsed_ms = int((time.time() - start_time) * 1000)
-            state.setdefault("node_outputs", {})[node_id] = {
-                "output": f"[Agent Error] {str(e)}",
-                "tokens": 0,
-                "latency_ms": elapsed_ms,
-                "status": "error",
-                "node_type": "llm",
-                "tool_calls": 0,
+            return {
+                "node_outputs": {node_id: {
+                    "output": f"[Agent Error] {str(e)}",
+                    "tokens": 0, "latency_ms": elapsed_ms,
+                    "status": "error", "node_type": "llm", "tool_calls": 0,
+                }},
+                "node_timeline": [{
+                    "node_id": node_id, "node_type": "llm", "status": "error",
+                    "tokens": 0, "latency_ms": elapsed_ms,
+                    "output_preview": str(e)[:200],
+                }],
+                "error": str(e),
             }
-            state["error"] = str(e)
-            state["node_timeline"].append({
-                "node_id": node_id, "node_type": "llm", "status": "error",
-                "tokens": 0, "latency_ms": elapsed_ms,
-                "output_preview": str(e)[:200],
-            })
-            return state
 
         # 写入结果
         node_data = {
@@ -187,20 +182,17 @@ def llm_node_factory(node_id: str, config: dict):
             node_data["cost_usd"] = result.cost_usd
             node_data["thinking_score"] = result.thinking_score
             node_data["task_score"] = result.task_score
-        state.setdefault("node_outputs", {})[node_id] = node_data
-
-        state["node_timeline"].append({
-            "node_id": node_id, "node_type": "llm", "status": result.status,
-            "tokens": result.tokens, "latency_ms": result.latency_ms,
-            "input_preview": user_prompt[:200],
-            "output_preview": result.output[:200],
-        })
-        # v0.5: 只返回增量，state reducer (add) 负责累加
-        state["total_tokens"] = result.tokens
-
-        if result.status == "error":
-            state["error"] = result.error
-
-        return state
+        # v0.7: 返回新 dict（LangGraph reducer 才能正确合并）
+        return {
+            "node_outputs": {node_id: node_data},
+            "node_timeline": [{
+                "node_id": node_id, "node_type": "llm", "status": result.status,
+                "tokens": result.tokens, "latency_ms": result.latency_ms,
+                "input_preview": user_prompt[:200],
+                "output_preview": result.output[:200],
+            }],
+            "total_tokens": result.tokens,
+            "error": result.error if result.status == "error" else "",
+        }
 
     return node_fn

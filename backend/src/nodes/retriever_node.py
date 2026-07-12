@@ -58,8 +58,9 @@ def retriever_node_factory(node_id: str, config: dict):
                                                               "latency_ms": elapsed_ms, "status": "error", "node_type": "retriever"}
             return state
 
-        state.setdefault("node_outputs", {})[node_id] = {"output": result.output, "tokens": result.tokens,
-                                                          "latency_ms": result.latency_ms, "status": result.status, "node_type": "retriever"}
-        state["total_tokens"] = result.tokens  # v0.5: delta, add reducer sums
-        return state
+        return {
+            "node_outputs": {node_id: {"output": result.output, "tokens": result.tokens,
+                                        "latency_ms": result.latency_ms, "status": result.status, "node_type": "retriever"}},
+            "total_tokens": result.tokens,
+        }
     return node_fn

@@ -88,12 +88,13 @@ def tool_node_factory(node_id: str, config: dict):
             }
             return state
 
-        state.setdefault("node_outputs", {})[node_id] = {
-            "output": result.output, "tokens": result.tokens,
-            "latency_ms": result.latency_ms, "status": result.status,
-            "node_type": "tool",
+        return {
+            "node_outputs": {node_id: {
+                "output": result.output, "tokens": result.tokens,
+                "latency_ms": result.latency_ms, "status": result.status,
+                "node_type": "tool",
+            }},
+            "total_tokens": result.tokens,
         }
-        state["total_tokens"] = result.tokens  # v0.5: delta, add reducer sums
-        return state
 
     return node_fn
