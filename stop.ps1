@@ -1,8 +1,23 @@
-# FlowForge v0.5 - Stop All Services
+# FlowForge v0.7 - Stop All Services
 Write-Host "=== FlowForge Stop ===" -ForegroundColor Yellow
 
 $python = "E:\anaconda3\envs\graph\python.exe"
 $backendDir = Join-Path $PSScriptRoot "backend"
+$pidFile = Join-Path $PSScriptRoot ".flowforge_pids.txt"
+
+# 0. Close PowerShell windows opened by start.ps1
+if (Test-Path $pidFile) {
+    Write-Host "[Windows] Closing service windows..." -ForegroundColor Cyan
+    Get-Content $pidFile | ForEach-Object {
+        $pid = $_.Trim()
+        if ($pid) {
+            Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+            Write-Host "  PID $pid closed"
+        }
+    }
+    Remove-Item $pidFile -Force
+    Start-Sleep 1
+}
 
 # 1. Clean running executions + OpenCode sessions
 Write-Host "[Clean] Clearing stuck executions..." -ForegroundColor Cyan
