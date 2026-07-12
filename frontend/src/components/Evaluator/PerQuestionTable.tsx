@@ -12,8 +12,8 @@ export default function PerQuestionTable({ details }: Props) {
       <h4 className="text-xs font-semibold text-[#999] uppercase mb-2">
         逐题结果
       </h4>
-      <div className="border rounded overflow-hidden">
-        <table className="w-full text-xs">
+      <div className="border rounded overflow-x-auto">
+        <table className="w-full text-xs min-w-[600px]">
           <thead className="bg-[#2d2d30]">
             <tr>
               <th className="text-left px-2 py-1.5 font-medium text-[#999]">#</th>

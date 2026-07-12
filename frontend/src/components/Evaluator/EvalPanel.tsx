@@ -129,7 +129,7 @@ export default function EvalPanel() {
   };
 
   return (
-    <div className="w-[400px] border-l bg-[#252526] flex flex-col h-full overflow-hidden">
+    <div className="min-w-[420px] w-[520px] border-l bg-[#252526] flex flex-col h-full overflow-hidden" style={{resize: 'horizontal'}}>
       <div className="p-3 border-b flex items-center justify-between">
         <h3 className="font-semibold text-sm">📊 评测</h3>
         <button
