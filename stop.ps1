@@ -5,14 +5,14 @@ $python = "E:\anaconda3\envs\graph\python.exe"
 $backendDir = Join-Path $PSScriptRoot "backend"
 $pidFile = Join-Path $PSScriptRoot ".flowforge_pids.txt"
 
-# 0. Close PowerShell windows opened by start.ps1
+# 0. Close PowerShell windows opened by start.ps1 (杀进程树，确保子进程一起关)
 if (Test-Path $pidFile) {
     Write-Host "[Windows] Closing service windows..." -ForegroundColor Cyan
     Get-Content $pidFile | ForEach-Object {
         $winPid = $_.Trim()
         if ($winPid) {
-            Stop-Process -Id $winPid -Force -ErrorAction SilentlyContinue
-            Write-Host "  PID $winPid closed"
+            taskkill /F /T /PID $winPid 2>$null
+            Write-Host "  PID $winPid closed (tree)"
         }
     }
     Remove-Item $pidFile -Force
@@ -23,14 +23,14 @@ if (Test-Path $pidFile) {
 Write-Host "[Clean] Clearing stuck executions..." -ForegroundColor Cyan
 & $python "$backendDir\cleanup.py" 2>&1 | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
 
-# 2. Kill processes on known ports (6379=Redis, 8000=Backend, 5173=Vite, 4096=OpenCode)
+# 2. Kill remaining processes on known ports
 foreach ($port in @(8000, 5173, 4096, 6379)) {
     $conn = netstat -ano | Select-String ":$port" | Select-String "LISTENING"
     if ($conn) {
         $procIds = ($conn | ForEach-Object { ($_ -split '\s+')[-1] } | Sort-Object -Unique)
         foreach ($procId in $procIds) {
             Write-Host "[$port] Stopping PID $procId"
-            taskkill /F /PID $procId 2>$null
+            taskkill /F /T /PID $procId 2>$null
         }
     } else {
         Write-Host "[$port] Free"
