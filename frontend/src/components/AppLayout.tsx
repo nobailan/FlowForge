@@ -162,18 +162,20 @@ export default function AppLayout() {
           {running ? '⏳ 运行中...' : '▶ 运行'}
         </button>
 
-        {executionId && (
-          <button
-            onClick={() => setRightPanel('monitor')}
-            className={`px-3 py-1 text-xs rounded transition-colors ${
-              rightPanelMode === 'monitor'
-                ? 'bg-[#3a3a1e] text-white'
-                : 'text-yellow-400 hover:bg-[#3a3a1e] border border-yellow-300'
-            }`}
-          >
-            📡 控制台
-          </button>
-        )}
+        <button
+          onClick={() => setRightPanel('monitor')}
+          disabled={!executionId}
+          className={`px-3 py-1 text-xs rounded transition-colors ${
+            rightPanelMode === 'monitor'
+              ? 'bg-[#3a3a1e] text-white'
+              : executionId
+                ? 'text-yellow-400 hover:bg-[#3a3a1e] border border-yellow-300'
+                : 'text-[#555] cursor-not-allowed'
+          }`}
+          title={executionId ? '查看执行监控' : '请先运行流程'}
+        >
+          📡 控制台
+        </button>
 
         <button
           onClick={handleEval}
