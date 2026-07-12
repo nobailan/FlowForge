@@ -3,8 +3,12 @@ import type { NodeEvent, ExecutionResult } from '../types/execution';
 import type { EvaluationResult, EvalSummary } from '../types/evaluation';
 
 export type RightPanelMode = 'config' | 'monitor' | 'eval' | 'compare' | 'library' | null;
+export type KernelType = 'opencode' | 'kunkun';
 
 interface AppStore {
+  // v0.7: 内核选择
+  kernel: KernelType;
+  setKernel: (kernel: KernelType) => void;
   // Architecture lifecycle
   currentArchitectureId: string | null;
   architectureName: string;
@@ -36,6 +40,9 @@ interface AppStore {
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
+  kernel: 'opencode',
+  setKernel: (kernel) => set({ kernel }),
+
   currentArchitectureId: null,
   architectureName: 'Untitled Flow',
   isDirty: false,

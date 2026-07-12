@@ -3,8 +3,8 @@ import type { CanvasData } from '../types/canvas';
 import type { ExecuteResponse, ExecutionResult, NodeEvent } from '../types/execution';
 
 export const executeApi = {
-  run: (canvas_data: CanvasData, input_text: string) =>
-    apiPost<ExecuteResponse>('/execute/', { canvas_data, input_text }),
+  run: (canvas_data: CanvasData, input_text: string, kernel?: string) =>
+    apiPost<ExecuteResponse>('/execute/', { canvas_data, input_text, kernel: kernel || 'opencode' }),
 
   getResult: (executionId: string) =>
     apiGet<ExecutionResult>(`/execute/${executionId}`),

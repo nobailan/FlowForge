@@ -64,6 +64,7 @@ class ArchitectureDetail(ArchitectureSummary):
 class ExecuteRequest(BaseModel):
     canvas_data: CanvasData
     input_text: str
+    kernel: str = "opencode"  # opencode | kunkun
 
 
 class ExecuteResponse(BaseModel):

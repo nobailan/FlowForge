@@ -51,8 +51,13 @@ NODE_TOOLS_MAP = {
 class AgentNodeAdapter:
     """将 FlowForge 节点执行委托给 OpenCode Agent Session。
 
+    v0.7: 支持双内核 — OpenCode 或 Kunkun (鲲)。
+
     用法:
-        adapter = AgentNodeAdapter("http://localhost:4096")
+        adapter = AgentNodeAdapter("http://localhost:4096", kernel="opencode")
+        # 或
+        adapter = AgentNodeAdapter(kernel="kunkun")
+
         result = await adapter.execute(
             execution_id="run_001",
             node_id="supervisor",
@@ -63,8 +68,13 @@ class AgentNodeAdapter:
         )
     """
 
-    def __init__(self, opencode_url: str = "http://localhost:4096"):
-        self.client = OpenCodeClient(opencode_url)
+    def __init__(self, opencode_url: str = "http://localhost:4096",
+                 kernel: str = "opencode"):
+        self.kernel = kernel
+        if kernel == "kunkun":
+            self.client = None
+        else:
+            self.client = OpenCodeClient(opencode_url)
         self.workspace = WorkspaceManager()
 
     def execute_sync(self, *args, **kwargs) -> NodeResult:
@@ -90,6 +100,13 @@ class AgentNodeAdapter:
         """执行一个节点，返回结构化结果。"""
         start_time = time.time()
 
+        # ─── v0.7: Kunkun 内核 ─────────────────────────
+        if self.kernel == "kunkun":
+            return await self._execute_kunkun(
+                execution_id, node_id, node_type, node_config,
+                input_text, upstream_outputs, start_time)
+
+        # ─── OpenCode 内核 ─────────────────────────────
         # MVP: 使用项目根目录作为 workspace（temp 目录 OpenCode 不接受）
         directory = "E:/agentProject/harness_lab"
 
@@ -209,6 +226,71 @@ class AgentNodeAdapter:
             return NodeResult(node_id=node_id, status="error",
                               error=str(e), latency_ms=elapsed_ms)
 
+    async def _execute_kunkun(
+        self, execution_id: str, node_id: str, node_type: str,
+        node_config: dict, input_text: str,
+        upstream_outputs: dict | None, start_time: float,
+    ) -> NodeResult:
+        """v0.7: 使用 Kunkun (鲲) 内核执行节点。"""
+        from kunkun.core.flowforge_adapter import FlowForgeAdapter, FlowForgeTask
+        from kunkun.core.state import HarnessConfig
+
+        # 构建 prompt
+        system_prompt = node_config.get("system_prompt", "")
+        user_prompt = input_text
+        task_text = system_prompt + "\n\n" + user_prompt
+
+        # 推送 node:start 事件
+        from .monitor_bridge import _stream_queue, make_event, EVENT_NODE_START
+        _stream_queue.put(make_event(
+            EVENT_NODE_START, execution_id, node_id,
+            node_type=node_type,
+            node_label=system_prompt[:80],
+        ))
+
+        try:
+            config = HarnessConfig.from_env()
+            config.model = node_config.get("model_id", "deepseek-v4-pro")
+            config.max_turns = node_config.get("max_steps", 25)
+
+            adapter = FlowForgeAdapter(config)
+            task = FlowForgeTask(
+                task_id=f"{execution_id}/{node_id}",
+                prompt=task_text,
+                model=config.model,
+                max_turns=config.max_turns,
+            )
+            result = await adapter.execute(task)
+
+            elapsed_ms = int((time.time() - start_time) * 1000)
+            tokens_val = sum(result.tokens.values()) if result.tokens else 0
+
+            # 推送 node:end 事件
+            from .monitor_bridge import _stream_queue, make_event, EVENT_NODE_END
+            _stream_queue.put(make_event(
+                EVENT_NODE_END, execution_id, node_id,
+                status="completed" if result.success else "error",
+                output_preview=result.output[:200],
+                tokens=tokens_val,
+                latency_ms=elapsed_ms,
+                tool_call_count=result.tool_calls,
+            ))
+
+            return NodeResult(
+                node_id=node_id,
+                output=result.output,
+                tokens=tokens_val,
+                latency_ms=elapsed_ms,
+                status="completed" if result.success else "error",
+                error="" if result.success else result.output,
+                tool_call_count=result.tool_calls,
+            )
+
+        except Exception as e:
+            elapsed_ms = int((time.time() - start_time) * 1000)
+            return NodeResult(node_id=node_id, status="error",
+                              error=str(e), latency_ms=elapsed_ms)
+
     async def cleanup_execution(self, execution_id: str) -> None:
         """清理一次执行的所有工作目录。"""
         self.workspace.cleanup(execution_id)
@@ -276,12 +358,13 @@ class AgentNodeAdapter:
         ]
 
 
-# 模块级单例（复用 HTTP 连接）
-_adapter: Optional[AgentNodeAdapter] = None
+# 模块级单例（按 kernel 分别缓存）
+_adapters: dict[str, AgentNodeAdapter] = {}
 
 
-def get_adapter(opencode_url: str = "http://localhost:4096") -> AgentNodeAdapter:
-    global _adapter
-    if _adapter is None:
-        _adapter = AgentNodeAdapter(opencode_url)
-    return _adapter
+def get_adapter(opencode_url: str = "http://localhost:4096",
+                kernel: str = "opencode") -> AgentNodeAdapter:
+    key = f"{kernel}:{opencode_url}"
+    if key not in _adapters:
+        _adapters[key] = AgentNodeAdapter(opencode_url, kernel=kernel)
+    return _adapters[key]

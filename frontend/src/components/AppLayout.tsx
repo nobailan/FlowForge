@@ -28,6 +28,8 @@ export default function AppLayout() {
   const executionId = useAppStore((s) => s.executionId);
   const setExecutionId = useAppStore((s) => s.setExecutionId);
   const executionStatus = useAppStore((s) => s.executionStatus);
+  const kernel = useAppStore((s) => s.kernel);
+  const setKernel = useAppStore((s) => s.setKernel);
   const setExecutionStatus = useAppStore((s) => s.setExecutionStatus);
   const clearExecution = useAppStore((s) => s.clearExecution);
   const clearAllRuntimeData = useCanvasStore((s) => s.clearAllRuntimeData);
@@ -82,7 +84,7 @@ export default function AppLayout() {
 
     console.log('[FlowForge] Sending execute request...');
     try {
-      const result = await executeApi.run(toCanvasJSON(), runInput);
+      const result = await executeApi.run(toCanvasJSON(), runInput, kernel);
       console.log('[FlowForge] Execution started:', result.execution_id);
       setExecutionId(result.execution_id);
       setExecutionStatus('running');
@@ -204,6 +206,18 @@ export default function AppLayout() {
           }`}
         >
           📦 架构库
+        </button>
+
+        <button
+          onClick={() => setKernel(kernel === 'opencode' ? 'kunkun' : 'opencode')}
+          className={`px-2 py-0.5 text-xs rounded transition-colors ${
+            kernel === 'kunkun'
+              ? 'bg-[#2a1e3a] text-purple-400 border border-purple-500'
+              : 'text-[#999] hover:bg-[#2d2d30]'
+          }`}
+          title={kernel === 'kunkun' ? 'Kunkun (鲲) — DeepSeek 原生 Harness' : 'OpenCode — Claude Code 兼容内核'}
+        >
+          {kernel === 'kunkun' ? '🐟 鲲' : '📡 OpenCode'}
         </button>
 
         <AutoPrompt />

@@ -31,7 +31,8 @@ async def execute_flow(data: ExecuteRequest, background_tasks: BackgroundTasks,
     db.commit()
     db.refresh(run)
 
-    executor = FlowExecutor(data.canvas_data.model_dump(), execution_id=run.id)
+    executor = FlowExecutor(data.canvas_data.model_dump(), execution_id=run.id,
+                             kernel=data.kernel)
 
     # 后台执行 — 使用独立的 DB session，避免请求级 session 提前关闭
     async def run_execution():

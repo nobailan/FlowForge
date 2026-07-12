@@ -14,9 +14,11 @@ from .state import create_initial_state
 class FlowExecutor:
     """编排一次完整的流程执行。"""
 
-    def __init__(self, canvas_data: dict, execution_id: str | None = None):
+    def __init__(self, canvas_data: dict, execution_id: str | None = None,
+                 kernel: str = "opencode"):
         self.canvas = canvas_data
         self.execution_id = execution_id or str(uuid.uuid4())
+        self.kernel = kernel
         self.event_bus = EventBus(self.execution_id)
 
     async def execute(self, user_input: str) -> dict:
@@ -30,7 +32,8 @@ class FlowExecutor:
             return self._error_result(f"Graph build failed: {e}")
 
         agent = graph.compile()
-        initial_state = create_initial_state(user_input, execution_id=self.execution_id)
+        initial_state = create_initial_state(user_input, execution_id=self.execution_id,
+                                             kernel=self.kernel)
         config = {"configurable": {"thread_id": self.execution_id}}
 
         # 立即广播所有节点为 "running"——前端不再显示 waiting

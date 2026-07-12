@@ -129,7 +129,8 @@ def llm_node_factory(node_id: str, config: dict):
             return state
 
         try:
-            adapter = AgentNodeAdapter("http://localhost:4096")
+            kernel = state.get("kernel", "opencode")
+            adapter = AgentNodeAdapter("http://localhost:4096", kernel=kernel)
             execution_id = state.get("execution_id", "default")
 
             result = adapter.execute_sync(
