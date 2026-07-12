@@ -14,7 +14,7 @@ TEMPLATES: dict[str, dict] = {
             "nodes": [
                 {"id": "supervisor", "type": "llm", "label": "Supervisor",
                  "config": {"model_provider": "deepseek", "model_id": "deepseek-v4-pro",
-                            "opencode_agent": "build", "max_steps": 5, "timeout_seconds": 60,
+                            "opencode_agent": "build", "max_steps": 3, "timeout_seconds": 45,
                             "allowed_tools": [],  # dispatcher: no tools
                             "system_prompt": (
                                 "You are a Task Dispatcher. Decompose the user's request into 3 independent subtasks.\n"
@@ -29,7 +29,7 @@ TEMPLATES: dict[str, dict] = {
                  "position": {"x": 400, "y": 50}},
                 {"id": "worker_1", "type": "llm", "label": "Worker 1",
                  "config": {"model_provider": "deepseek", "model_id": "deepseek-v4-pro",
-                            "opencode_agent": "build", "max_steps": 8, "timeout_seconds": 90,
+                            "opencode_agent": "build", "max_steps": 4, "timeout_seconds": 60,
                             "allowed_tools": ["read", "grep", "glob"],
                             "system_prompt": (
                                 "You are Worker 1. Do ONLY the [Worker 1] task from the dispatcher plan.\n"
@@ -44,7 +44,7 @@ TEMPLATES: dict[str, dict] = {
                  "position": {"x": 100, "y": 250}},
                 {"id": "worker_2", "type": "llm", "label": "Worker 2",
                  "config": {"model_provider": "deepseek", "model_id": "deepseek-v4-pro",
-                            "opencode_agent": "build", "max_steps": 8, "timeout_seconds": 90,
+                            "opencode_agent": "build", "max_steps": 4, "timeout_seconds": 60,
                             "allowed_tools": ["read", "grep", "glob"],
                             "system_prompt": (
                                 "You are Worker 2. Do ONLY the [Worker 2] task from the dispatcher plan.\n"
@@ -69,7 +69,7 @@ TEMPLATES: dict[str, dict] = {
                  "position": {"x": 700, "y": 250}},
                 {"id": "aggregator", "type": "llm", "label": "Aggregator",
                  "config": {"model_provider": "deepseek", "model_id": "deepseek-v4-pro",
-                            "opencode_agent": "build", "max_steps": 5, "timeout_seconds": 60,
+                            "opencode_agent": "build", "max_steps": 3, "timeout_seconds": 45,
                             "allowed_tools": [],  # aggregator: no tools
                             "system_prompt": (
                                 "You are a Result Aggregator. Synthesize all worker outputs into "
@@ -104,7 +104,7 @@ TEMPLATES: dict[str, dict] = {
             "nodes": [
                 {"id": "step_1", "type": "llm", "label": "Step 1: Analyze",
                  "config": {"model_provider": "deepseek", "model_id": "deepseek-v4-pro",
-                            "opencode_agent": "build", "max_steps": 5, "timeout_seconds": 60,
+                            "opencode_agent": "build", "max_steps": 3, "timeout_seconds": 45,
                             "allowed_tools": ["read", "grep", "glob"],
                             "system_prompt": (
                                 "You are Step 1 ONLY. Process the user input and produce a structured result.\n"
@@ -117,7 +117,7 @@ TEMPLATES: dict[str, dict] = {
                  "position": {"x": 400, "y": 50}},
                 {"id": "step_2", "type": "llm", "label": "Step 2: Reason",
                  "config": {"model_provider": "deepseek", "model_id": "deepseek-v4-pro",
-                            "opencode_agent": "build", "max_steps": 5, "timeout_seconds": 60,
+                            "opencode_agent": "build", "max_steps": 3, "timeout_seconds": 45,
                             "allowed_tools": ["read", "grep", "glob"],
                             "system_prompt": (
                                 "You are Step 2 ONLY. Take Step 1's result and perform your analysis.\n"
@@ -140,7 +140,7 @@ TEMPLATES: dict[str, dict] = {
                  "position": {"x": 400, "y": 350}},
                 {"id": "step_4", "type": "llm", "label": "Step 4: Summarize",
                  "config": {"model_provider": "deepseek", "model_id": "deepseek-v4-pro",
-                            "opencode_agent": "build", "max_steps": 5, "timeout_seconds": 60,
+                            "opencode_agent": "build", "max_steps": 3, "timeout_seconds": 45,
                             "allowed_tools": [],
                             "system_prompt": (
                                 "You are Step 4 ONLY. Combine previous steps' results into ONE final answer.\n"
@@ -170,14 +170,12 @@ TEMPLATES: dict[str, dict] = {
         "canvas_data": {
             "nodes": [
                 {"id": "fan_out", "type": "llm", "label": "Fan-Out",
-                 "config": {"model_provider": "deepseek", "model_id": "deepseek-v4-pro",
-                            "opencode_agent": "build", "max_steps": 1, "timeout_seconds": 15,
-                            "system_prompt": "Output the single word: READY",
-                            "user_prompt_template": "READY"},
+                 "config": {"max_steps": 0, "timeout_seconds": 1,
+                            "passthrough_output": "READY"},
                  "position": {"x": 400, "y": 50}},
                 {"id": "expert_a", "type": "llm", "label": "Expert A: Facts",
                  "config": {"model_provider": "deepseek", "model_id": "deepseek-v4-pro",
-                            "opencode_agent": "build", "max_steps": 8, "timeout_seconds": 90,
+                            "opencode_agent": "build", "max_steps": 4, "timeout_seconds": 60,
                             "allowed_tools": ["read", "grep"],
                             "system_prompt": (
                                 "You are Expert A (Facts). Answer from a factual, data-driven perspective.\n"
@@ -188,7 +186,7 @@ TEMPLATES: dict[str, dict] = {
                  "position": {"x": 100, "y": 250}},
                 {"id": "expert_b", "type": "llm", "label": "Expert B: Logic",
                  "config": {"model_provider": "deepseek", "model_id": "deepseek-v4-pro",
-                            "opencode_agent": "build", "max_steps": 8, "timeout_seconds": 90,
+                            "opencode_agent": "build", "max_steps": 4, "timeout_seconds": 60,
                             "allowed_tools": ["read"],
                             "system_prompt": (
                                 "You are Expert B (Logic). Answer from a logical reasoning perspective.\n"
@@ -209,7 +207,7 @@ TEMPLATES: dict[str, dict] = {
                  "position": {"x": 700, "y": 250}},
                 {"id": "merger", "type": "llm", "label": "Merger",
                  "config": {"model_provider": "deepseek", "model_id": "deepseek-v4-pro",
-                            "opencode_agent": "build", "max_steps": 8, "timeout_seconds": 90,
+                            "opencode_agent": "build", "max_steps": 4, "timeout_seconds": 60,
                             "allowed_tools": [],
                             "system_prompt": (
                                 "Synthesize the three expert opinions into ONE cohesive final answer.\n"
@@ -263,7 +261,7 @@ TEMPLATES: dict[str, dict] = {
                  "position": {"x": 150, "y": 350}},
                 {"id": "analysis_handler", "type": "llm", "label": "Deep Analysis",
                  "config": {"model_provider": "deepseek", "model_id": "deepseek-v4-pro",
-                            "opencode_agent": "build", "max_steps": 8, "timeout_seconds": 90,
+                            "opencode_agent": "build", "max_steps": 4, "timeout_seconds": 60,
                             "allowed_tools": ["read", "grep", "glob"],
                             "system_prompt": (
                                 "Provide a deep analysis of the input. Be thorough but concise.\n"
@@ -274,7 +272,7 @@ TEMPLATES: dict[str, dict] = {
                  "position": {"x": 650, "y": 350}},
                 {"id": "finalizer", "type": "llm", "label": "Finalizer",
                  "config": {"model_provider": "deepseek", "model_id": "deepseek-v4-pro",
-                            "opencode_agent": "build", "max_steps": 5, "timeout_seconds": 60,
+                            "opencode_agent": "build", "max_steps": 3, "timeout_seconds": 45,
                             "allowed_tools": [],
                             "system_prompt": (
                                 "Produce the final answer based on the handler output.\n"
@@ -305,7 +303,7 @@ TEMPLATES: dict[str, dict] = {
             "nodes": [
                 {"id": "generator", "type": "llm", "label": "Generator",
                  "config": {"model_provider": "deepseek", "model_id": "deepseek-v4-pro",
-                            "opencode_agent": "build", "max_steps": 5, "timeout_seconds": 60,
+                            "opencode_agent": "build", "max_steps": 3, "timeout_seconds": 45,
                             "allowed_tools": [],
                             "system_prompt": (
                                 "Generate an answer to the input. DO NOT use any tools.\n"
@@ -332,7 +330,7 @@ TEMPLATES: dict[str, dict] = {
                  "position": {"x": 400, "y": 350}},
                 {"id": "improver", "type": "llm", "label": "Improver",
                  "config": {"model_provider": "deepseek", "model_id": "deepseek-v4-pro",
-                            "opencode_agent": "build", "max_steps": 5, "timeout_seconds": 60,
+                            "opencode_agent": "build", "max_steps": 3, "timeout_seconds": 45,
                             "allowed_tools": [],
                             "system_prompt": (
                                 "Improve the answer based on the feedback. DO NOT use any tools.\n"

@@ -107,6 +107,27 @@ def llm_node_factory(node_id: str, config: dict):
             if isinstance(ndata, dict) and ndata.get("output"):
                 upstream[nid] = ndata["output"]
 
+        # v0.7: 零延迟直通模式 — max_steps=0 时跳过 OpenCode，直接返回固定值
+        passthrough = config.get("passthrough_output")
+        max_steps_val = config.get("max_steps", 25)
+        if passthrough is not None or max_steps_val <= 0:
+            output = passthrough if passthrough is not None else "READY"
+            elapsed_ms = int((time.time() - start_time) * 1000)
+            state.setdefault("node_outputs", {})[node_id] = {
+                "output": output,
+                "tokens": 0,
+                "latency_ms": elapsed_ms,
+                "status": "completed",
+                "node_type": "llm",
+                "tool_calls": 0,
+            }
+            state["node_timeline"].append({
+                "node_id": node_id, "node_type": "llm", "status": "completed",
+                "tokens": 0, "latency_ms": elapsed_ms,
+                "output_preview": output[:200],
+            })
+            return state
+
         try:
             adapter = AgentNodeAdapter("http://localhost:4096")
             execution_id = state.get("execution_id", "default")

@@ -40,67 +40,63 @@ class EvaluationRunner:
         self.test_cases = test_cases
 
     async def run(self) -> dict:
-        """对每个 test case 执行架构并评估。"""
-        details = []
+        """并行执行 test cases（v0.7: 信号量限制并发数，避免压垮 DeepSeek）。"""
+        semaphore = asyncio.Semaphore(3)  # 最多 3 题并发
 
-        for tc in self.test_cases:
-            question = tc.get("question", "")
-            if not question:
-                continue
+        async def run_one(tc: dict) -> dict:
+            async with semaphore:
+                question = tc.get("question", "")
+                if not question:
+                    return None
 
-            start = time.time()
-            output = ""
-            error = ""
-            latency_ms = 0
-            tokens = 0
-            tool_calls = 0
-
-            try:
-                executor = FlowExecutor(self.canvas)
-                # v0.7: 单题超时保护（最多 5 分钟）
-                exec_result = await asyncio.wait_for(
-                    executor.execute(question),
-                    timeout=300,
-                )
-
-                output = exec_result.get("final_output", "")
-                error = exec_result.get("error", "")
-                latency_ms = exec_result.get("total_latency_ms", 0)
-                tokens = exec_result.get("total_tokens", 0)
-                tool_calls = exec_result.get("total_tool_calls", 0)
-
-                # LLM-as-Judge
-                if output and not error:
-                    success = await self._judge(question, output, tc)
-                else:
-                    success = False
-
-            except asyncio.TimeoutError:
+                start = time.time()
                 output = ""
-                error = f"Timeout: question exceeded 300s limit"
-                latency_ms = 300000
+                error = ""
+                latency_ms = 0
                 tokens = 0
-                success = False
-            except Exception as e:
-                output = ""
-                error = str(e)
-                latency_ms = int((time.time() - start) * 1000)
-                tokens = 0
+                tool_calls = 0
                 success = False
 
-            details.append({
-                "test_id": tc.get("id", 0),
-                "question": question,
-                "category": tc.get("category", ""),
-                "success": success,
-                "latency_ms": latency_ms,
-                "tokens": tokens,
-                "output": output[:1000],
-                "error": error,
-                "tool_calls": tool_calls,
-                "tool_errors": 0,
-                "tool_call_log": [],
-            })
+                try:
+                    executor = FlowExecutor(self.canvas)
+                    exec_result = await asyncio.wait_for(
+                        executor.execute(question),
+                        timeout=300,
+                    )
+                    output = exec_result.get("final_output", "")
+                    error = exec_result.get("error", "")
+                    latency_ms = exec_result.get("total_latency_ms", 0)
+                    tokens = exec_result.get("total_tokens", 0)
+                    tool_calls = exec_result.get("total_tool_calls", 0)
+
+                    if output and not error:
+                        success = await self._judge(question, output, tc)
+                    else:
+                        success = False
+
+                except asyncio.TimeoutError:
+                    error = "Timeout: question exceeded 300s limit"
+                    latency_ms = 300000
+                except Exception as e:
+                    error = str(e)
+                    latency_ms = int((time.time() - start) * 1000)
+
+                return {
+                    "test_id": tc.get("id", 0),
+                    "question": question,
+                    "category": tc.get("category", ""),
+                    "success": success,
+                    "latency_ms": latency_ms,
+                    "tokens": tokens,
+                    "output": output[:1000],
+                    "error": error,
+                    "tool_calls": tool_calls,
+                    "tool_errors": 0,
+                    "tool_call_log": [],
+                }
+
+        results = await asyncio.gather(*[run_one(tc) for tc in self.test_cases])
+        details = [r for r in results if r is not None]
 
         # 计算汇总指标（使用 v0.2 扩展版 compute_metrics）
         summary = compute_metrics(details)
