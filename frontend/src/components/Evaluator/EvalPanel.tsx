@@ -73,7 +73,6 @@ export default function EvalPanel() {
   );
 
   const handleRunEval = async () => {
-    console.log('[EvalPanel] handleRunEval called', { archId: currentArchitectureId, setId: selectedSetId, kernel });
     setLoading(true);
     setError('');
     setMessage('正在保存架构...');
