@@ -116,7 +116,8 @@ export default function EvalPanel() {
         }
       }, 600000);
     } catch (e: any) {
-      setError(e.message);
+      console.error('[EvalPanel]', e);
+      setError(e?.message || String(e) || '未知错误');
       setLoading(false);
     }
   };
