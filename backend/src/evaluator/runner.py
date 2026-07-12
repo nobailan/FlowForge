@@ -69,6 +69,18 @@ class EvaluationRunner:
                     tokens = exec_result.get("total_tokens", 0)
                     tool_calls = exec_result.get("total_tool_calls", 0)
 
+                    # v0.7: 收集 Kunkun 指标
+                    node_outputs = exec_result.get("node_outputs", {})
+                    total_cost_usd = sum(
+                        nd.get("cost_usd", 0) for nd in node_outputs.values()
+                        if isinstance(nd, dict)
+                    )
+                    think_scores = [
+                        nd.get("thinking_score", -1) for nd in node_outputs.values()
+                        if isinstance(nd, dict) and nd.get("thinking_score", -1) >= 0
+                    ]
+                    avg_think = sum(think_scores) / len(think_scores) if think_scores else -1
+
                     if output and not error:
                         success = await self._judge(question, output, tc)
                     else:
@@ -93,6 +105,9 @@ class EvaluationRunner:
                     "tool_calls": tool_calls,
                     "tool_errors": 0,
                     "tool_call_log": [],
+                    # v0.7: Kunkun 指标
+                    "cost_usd": total_cost_usd,
+                    "thinking_score": avg_think,
                 }
 
         results = await asyncio.gather(*[run_one(tc) for tc in self.test_cases])

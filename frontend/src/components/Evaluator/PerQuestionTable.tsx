@@ -19,9 +19,10 @@ export default function PerQuestionTable({ details }: Props) {
               <th className="text-left px-2 py-1.5 font-medium text-[#999]">#</th>
               <th className="text-left px-2 py-1.5 font-medium text-[#999]">问题</th>
               <th className="text-center px-2 py-1.5 font-medium text-[#999]">结果</th>
-              <th className="text-right px-2 py-1.5 font-medium text-[#999]">延迟</th>
+              <th className="text-right px-2 py-1.5 font-medium text-[#999]">成本</th>
               <th className="text-right px-2 py-1.5 font-medium text-[#999]">Token</th>
-              <th className="text-right px-2 py-1.5 font-medium text-[#999]">工具</th>
+              <th className="text-right px-2 py-1.5 font-medium text-[#999]">思考</th>
+              <th className="text-right px-2 py-1.5 font-medium text-[#999]">延迟</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -38,9 +39,14 @@ export default function PerQuestionTable({ details }: Props) {
                     <span className="text-red-500" title={d.error || 'Failed'}>❌</span>
                   )}
                 </td>
-                <td className="px-2 py-1 text-right text-[#999]">{d.latency_ms}ms</td>
+                <td className="px-2 py-1 text-right text-green-400 font-mono text-[10px]">
+                  {(d as any).cost_usd > 0 ? `$${(d as any).cost_usd.toFixed(4)}` : '-'}
+                </td>
                 <td className="px-2 py-1 text-right text-[#999]">{d.tokens}</td>
-                <td className="px-2 py-1 text-right text-[#999]">{d.tool_calls ?? 0}</td>
+                <td className="px-2 py-1 text-right text-purple-400 text-[10px]">
+                  {(d as any).thinking_score >= 0 ? `🧠${(d as any).thinking_score.toFixed(1)}` : '-'}
+                </td>
+                <td className="px-2 py-1 text-right text-[#999]">{d.latency_ms}ms</td>
               </tr>
             ))}
           </tbody>

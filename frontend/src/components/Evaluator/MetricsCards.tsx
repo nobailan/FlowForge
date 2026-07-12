@@ -42,6 +42,23 @@ export default function MetricsCards({ summary }: Props) {
       color: 'text-indigo-400',
       bg: 'bg-[#1e1e3a]',
     },
+    // v0.7: Kunkun 指标（仅当有数据时显示）
+    if ((summary as any).total_cost_usd > 0) {
+      cards.push({
+        label: '实际成本 (Kunkun)',
+        value: `$${(summary as any).total_cost_usd.toFixed(4)}`,
+        color: 'text-green-500',
+        bg: 'bg-[#1e3a2f]',
+      });
+    }
+    if ((summary as any).avg_thinking_score >= 0) {
+      cards.push({
+        label: '思考评分 (Kunkun)',
+        value: `🧠${(summary as any).avg_thinking_score.toFixed(1)}/5`,
+        color: 'text-purple-400',
+        bg: 'bg-[#2a1e3a]',
+      });
+    }
   ];
 
   return (

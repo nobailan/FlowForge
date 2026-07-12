@@ -16,6 +16,8 @@ def compute_metrics(details: list[dict]) -> dict:
     tokens = [d.get("tokens", 0) for d in details]
     tool_calls = [d.get("tool_calls", 0) for d in details]
     tool_errors = [d.get("tool_errors", 0) for d in details]
+    costs = [d.get("cost_usd", 0) for d in details if d.get("cost_usd", 0) > 0]
+    think_scores = [d.get("thinking_score", -1) for d in details if d.get("thinking_score", -1) >= 0]
 
     total_tool_calls = sum(tool_calls)
     total_tool_errors = sum(tool_errors)
@@ -38,6 +40,9 @@ def compute_metrics(details: list[dict]) -> dict:
         "avg_tool_calls_per_question": round(total_tool_calls / total, 1),
         "max_latency_ms": max(latencies) if latencies else 0,
         "min_latency_ms": min(latencies) if latencies else 0,
+        # v0.7: Kunkun 指标
+        "total_cost_usd": round(sum(costs), 6),
+        "avg_thinking_score": round(sum(think_scores) / len(think_scores), 1) if think_scores else -1,
     }
 
 
@@ -48,6 +53,7 @@ def _empty_metrics() -> dict:
         "total_tool_calls": 0, "total_tool_errors": 0,
         "tool_success_rate": 0, "avg_tool_calls_per_question": 0,
         "max_latency_ms": 0, "min_latency_ms": 0,
+        "total_cost_usd": 0, "avg_thinking_score": -1,
     }
 
 

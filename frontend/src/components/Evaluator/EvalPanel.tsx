@@ -25,6 +25,11 @@ interface TopoRecommendation {
 export default function EvalPanel() {
   const setRightPanel = useAppStore((s) => s.setRightPanel);
   const currentArchitectureId = useAppStore((s) => s.currentArchitectureId);
+  // v0.7: 结果持久化在 appStore，关掉不丢失
+  const evalDetailResults = useAppStore((s) => s.evalDetailResults);
+  const setEvalDetailResults = useAppStore((s) => s.setEvalDetailResults);
+  const evalResults = useAppStore((s) => s.evalResults);
+  const setEvalResults = useAppStore((s) => s.setEvalResults);
 
   const getCanvasData = useCallback(() => {
     try {
@@ -35,7 +40,6 @@ export default function EvalPanel() {
   }, []);
 
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<EvaluationResult | null>(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
@@ -100,7 +104,8 @@ export default function EvalPanel() {
         const updated = await evaluateApi.getResult(evalResult.id);
         if (updated.status === 'completed' || updated.status === 'failed') {
           clearInterval(pollInterval);
-          setResult(updated);
+          setEvalDetailResults(updated);
+          setEvalResults(updated.summary);
           setLoading(false);
           setMessage('');
         } else {
@@ -135,7 +140,7 @@ export default function EvalPanel() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
-        {!result && !loading && (
+        {!evalDetailResults && !loading && (
           <>
             {/* v0.7: 拓扑推荐 */}
             {recommendation && (
@@ -215,16 +220,16 @@ export default function EvalPanel() {
           </div>
         )}
 
-        {result && (
+        {evalDetailResults && (
           <>
             <button
-              onClick={() => { setResult(null); setError(''); }}
+              onClick={() => { setEvalDetailResults(null); setEvalResults(null); setError(''); }}
               className="w-full text-xs text-[#999] hover:text-[#ddd]"
             >
               ← 返回重新评测
             </button>
-            <MetricsCards summary={result.summary} />
-            <PerQuestionTable details={result.detail_results} />
+            <MetricsCards summary={evalResults || evalDetailResults.summary} />
+            <PerQuestionTable details={evalDetailResults.detail_results} />
           </>
         )}
       </div>

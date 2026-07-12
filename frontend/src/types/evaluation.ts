@@ -15,6 +15,9 @@ export interface EvalSummary {
   avg_tool_calls_per_question: number;
   max_latency_ms: number;
   min_latency_ms: number;
+  // v0.7: Kunkun
+  total_cost_usd?: number;
+  avg_thinking_score?: number;
 }
 
 export interface EvalDetail {
@@ -30,6 +33,9 @@ export interface EvalDetail {
   tool_calls: number;
   tool_errors: number;
   tool_call_log: ToolCallLogEntry[];
+  // v0.7: Kunkun metrics
+  cost_usd?: number;
+  thinking_score?: number;
 }
 
 export interface ToolCallLogEntry {
