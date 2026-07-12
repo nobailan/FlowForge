@@ -121,6 +121,9 @@ class EvalSummary(BaseModel):
     avg_tool_calls_per_question: float = 0
     max_latency_ms: int = 0
     min_latency_ms: int = 0
+    # v0.7: Kunkun metrics
+    total_cost_usd: float = 0
+    avg_thinking_score: float = -1
 
 
 class EvalDetail(BaseModel):
@@ -136,6 +139,9 @@ class EvalDetail(BaseModel):
     tool_calls: int = 0
     tool_errors: int = 0
     tool_call_log: list[dict[str, Any]] = Field(default_factory=list)
+    # v0.7: Kunkun metrics
+    cost_usd: float = 0
+    thinking_score: float = -1
 
 
 class EvaluationResult(BaseModel):
